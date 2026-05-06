@@ -112,6 +112,7 @@ header{background:var(--surface);border-bottom:2px solid var(--border);padding:0
 /* CONTENT OUTPUT */
 .content-box{background:var(--surface);border:2px solid var(--accent);border-radius:12px;padding:24px;display:none;}
 .content-box.show{display:block;}
+/* content-box inside right panel overrides */
 .content-hdr{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:20px;gap:12px;}
 .content-title-row{flex:1;}
 .content-title{font-family:'Syne',sans-serif;font-size:18px;font-weight:700;}
@@ -197,6 +198,16 @@ header{background:var(--surface);border-bottom:2px solid var(--border);padding:0
 .empty-state strong{display:block;font-size:16px;font-weight:700;color:var(--text);margin-bottom:8px;}
 .sec-title{font-family:'Syne',sans-serif;font-size:13px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);}
 .sec-title b{color:var(--text);}
+
+/* SPLIT LAYOUT */
+.news-split{display:grid;grid-template-columns:1fr 480px;gap:20px;align-items:start;}
+.news-left{display:flex;flex-direction:column;gap:20px;min-width:0;}
+.news-right{position:sticky;top:84px;display:flex;flex-direction:column;gap:16px;}
+.content-box-right{background:var(--surface);border:2px solid var(--accent);border-radius:12px;padding:20px;display:none;max-height:calc(100vh - 100px);overflow-y:auto;}
+.content-box-right.show{display:block;}
+.content-box-right::-webkit-scrollbar{width:4px;}
+.content-box-right::-webkit-scrollbar-thumb{background:var(--border2);border-radius:2px;}
+.version-tag{font-size:10px;color:var(--dim);font-family:'Plus Jakarta Sans',sans-serif;margin-top:2px;letter-spacing:.03em;}
 </style>
 </head>
 <body>
@@ -229,7 +240,10 @@ header{background:var(--surface);border-bottom:2px solid var(--border);padding:0
 
 <!-- HEADER -->
 <header>
-  <div class="logo">PANAX <span class="logo-badge">BOARD</span></div>
+  <div>
+    <div class="logo">PANAX <span class="logo-badge">BOARD</span></div>
+    <div class="version-tag">PANAX_board 1.0 (250506)</div>
+  </div>
   <div class="hdr-right">
     <div class="dot-row">
       <span class="dot" id="d-ant"></span>Claude
@@ -249,20 +263,24 @@ header{background:var(--surface);border-bottom:2px solid var(--border);padding:0
 
   <!-- ══ NEWS TAB ══ -->
   <div id="tab-news">
+    <div class="news-split">
 
-    <!-- FREE INPUT -->
-    <div class="free-input-section">
-      <div class="free-input-title">✍ 기사 직접 입력</div>
-      <div class="free-input-desc">RSS 피드 외에도 직접 찾은 기사를 여기에 붙여넣으면 바로 컨텐츠로 만들 수 있어요. (최소 100자 이상)</div>
-      <textarea class="free-textarea" id="free-text" placeholder="기사 제목, 본문 내용을 여기에 붙여넣어 주세요..." oninput="onFreeInput()"></textarea>
-      <div class="free-input-footer">
-        <span class="char-count" id="free-chars">0자</span>
-        <button class="btn btn-primary" id="free-gen-btn" disabled onclick="generateFromFree()">📱 컨텐츠 생성</button>
-      </div>
-    </div>
+      <!-- LEFT: Free input + News feed -->
+      <div class="news-left">
 
-    <!-- NEWS FEED -->
-    <div class="news-section">
+        <!-- FREE INPUT -->
+        <div class="free-input-section">
+          <div class="free-input-title">✍ 기사 직접 입력</div>
+          <div class="free-input-desc">RSS 피드 외에도 직접 찾은 기사를 여기에 붙여넣으면 바로 컨텐츠로 만들 수 있어요. (최소 100자 이상)</div>
+          <textarea class="free-textarea" id="free-text" placeholder="기사 제목, 본문 내용을 여기에 붙여넣어 주세요..." oninput="onFreeInput()"></textarea>
+          <div class="free-input-footer">
+            <span class="char-count" id="free-chars">0자</span>
+            <button class="btn btn-primary" id="free-gen-btn" disabled onclick="generateFromFree()">📱 컨텐츠 생성</button>
+          </div>
+        </div>
+
+        <!-- NEWS FEED -->
+        <div class="news-section">
       <div class="news-toolbar">
         <div class="toolbar-left">
           <select class="period-sel" id="period">
@@ -292,21 +310,31 @@ header{background:var(--surface);border-bottom:2px solid var(--border);padding:0
       </div>
     </div>
 
-    <!-- CONTENT OUTPUT (news) -->
-    <div class="content-box" id="content-box">
-      <div class="content-hdr">
-        <div class="content-title-row">
-          <div class="content-title">📱 컨텐츠 생성 결과</div>
-          <div class="content-source" id="content-source"></div>
+      </div><!-- end news-left -->
+
+      <!-- RIGHT: Content output (sticky) -->
+      <div class="news-right">
+        <div class="content-box-right" id="content-box">
+          <div class="content-hdr" style="margin-bottom:16px;">
+            <div class="content-title-row">
+              <div class="content-title" style="font-size:16px;">📱 컨텐츠 생성 결과</div>
+              <div class="content-source" id="content-source" style="font-size:12px;"></div>
+            </div>
+            <div class="content-actions">
+              <button class="btn btn-sm" onclick="saveCurrentContent()">💾 저장</button>
+              <button class="btn btn-sm btn-ghost" onclick="closeContent()">✕</button>
+            </div>
+          </div>
+          <div id="content-body"></div>
         </div>
-        <div class="content-actions">
-          <button class="btn btn-sm" onclick="saveCurrentContent()">💾 저장</button>
-          <button class="btn btn-sm btn-ghost" onclick="closeContent()">✕ 닫기</button>
+        <!-- Placeholder when no content -->
+        <div id="content-placeholder" style="background:var(--surface);border:2px dashed var(--border2);border-radius:12px;padding:32px 20px;text-align:center;color:var(--dim);font-size:13px;line-height:1.7;">
+          <div style="font-size:28px;margin-bottom:10px;">📱</div>
+          뉴스 카드의<br><strong style="color:var(--muted);">컨텐츠 생성</strong> 버튼을<br>누르면 여기에 결과가 나와요
         </div>
       </div>
-      <div id="content-body"></div>
-    </div>
 
+    </div><!-- end news-split -->
   </div>
 
   <!-- ══ BOOKMARKS TAB ══ -->
@@ -883,10 +911,15 @@ async function generateContent(news, target, userContent, catId) {
 
   const box = document.getElementById(boxId);
   box.classList.add('show');
+  // Hide placeholder when content appears (news tab only)
+  if (boxId === 'content-box') {
+    const ph = document.getElementById('content-placeholder');
+    if (ph) ph.style.display = 'none';
+  }
   document.getElementById(sourceId).textContent = news.title;
   document.getElementById(bodyId).innerHTML =
-    '<div style="text-align:center;padding:48px;color:var(--muted);"><span class="spinner"></span> Sammy와 Ledy가 준비 중이에요...</div>';
-  box.scrollIntoView({ behavior:'smooth', block:'start' });
+    '<div style="text-align:center;padding:32px;color:var(--muted);"><span class="spinner"></span> Sammy와 Ledy가 준비 중이에요...</div>';
+  if (boxId !== 'content-box') box.scrollIntoView({ behavior:'smooth', block:'start' });
 
   try {
     const raw = await callClaude(CONTENT_SYSTEM, userContent, 2500);
@@ -1048,7 +1081,11 @@ function clearSavedContents() {
   renderSavedList();
 }
 
-function closeContent()   { document.getElementById('content-box').classList.remove('show'); }
+function closeContent() {
+  document.getElementById('content-box').classList.remove('show');
+  const ph = document.getElementById('content-placeholder');
+  if (ph) ph.style.display = '';
+}
 function closeContentBm() { document.getElementById('content-box-bm').classList.remove('show'); }
 
 // ── INIT ──
