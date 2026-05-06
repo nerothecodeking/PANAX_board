@@ -301,21 +301,58 @@ function switchTab(tab, el) {
 
 // ── RSS FETCH ──
 async function fetchRSS(feed) {
-  const proxy = `https://api.allorigins.win/get?url=${encodeURIComponent(feed.url)}`;
-  const res = await fetch(proxy);
-  const data = await res.json();
-  const parser = new DOMParser();
-  const doc = parser.parseFromString(data.contents, 'text/xml');
-  const items = [...doc.querySelectorAll('item, entry')];
-  return items.slice(0, 8).map(item => {
-    const title = item.querySelector('title')?.textContent?.trim() || '';
-    const link  = item.querySelector('link')?.textContent?.trim() ||
-                  item.querySelector('link')?.getAttribute('href') || '';
-    const desc  = item.querySelector('description, summary, content')?.textContent?.trim()
-                    .replace(/<[^>]+>/g, '').replace(/\s+/g, ' ').substring(0, 300) || '';
-    const pubDate = item.querySelector('pubDate, published, updated')?.textContent?.trim() || '';
-    return { title, link, desc, source: feed.name, pubDate };
-  }).filter(i => i.title && i.link);
+  const proxies = [
+    url => `https://api.rss2json.com/v1/api.json?rss_url=${encodeURIComponent(url)}`,
+    url => `https://api.allorigins.win/get?url=${encodeURIComponent(url)}`,
+    url => `https://corsproxy.io/?${encodeURIComponent(url)}`
+  ];
+
+  // Try rss2json first (returns clean JSON)
+  try {
+    const res = await fetch(proxies[0](feed.url));
+    if (!res.ok) throw new Error('rss2json failed');
+    const data = await res.json();
+    if (data.status === 'ok' && data.items && data.items.length) {
+      return data.items.slice(0, 8).map(item => ({
+        title: item.title?.trim() || '',
+        link: item.link?.trim() || '',
+        desc: (item.description || item.content || '')
+          .replace(/<[^>]+>/g, '').replace(/\s+/g, ' ').substring(0, 300),
+        source: feed.name,
+        pubDate: item.pubDate || ''
+      })).filter(i => i.title && i.link);
+    }
+  } catch {}
+
+  // Fallback: raw XML proxies
+  for (let i = 1; i < proxies.length; i++) {
+    try {
+      const res = await fetch(proxies[i](feed.url));
+      if (!res.ok) continue;
+      let xmlText = '';
+      if (proxies[i](feed.url).includes('allorigins')) {
+        const data = await res.json();
+        xmlText = data.contents || '';
+      } else {
+        xmlText = await res.text();
+      }
+      if (!xmlText) continue;
+      const parser = new DOMParser();
+      const doc = parser.parseFromString(xmlText, 'text/xml');
+      const items = [...doc.querySelectorAll('item, entry')];
+      if (!items.length) continue;
+      return items.slice(0, 8).map(item => {
+        const title = item.querySelector('title')?.textContent?.trim() || '';
+        const link  = item.querySelector('link')?.textContent?.trim() ||
+                      item.querySelector('link')?.getAttribute('href') || '';
+        const desc  = item.querySelector('description, summary, content')?.textContent?.trim()
+                        .replace(/<[^>]+>/g, '').replace(/\s+/g, ' ').substring(0, 300) || '';
+        const pubDate = item.querySelector('pubDate, published, updated')?.textContent?.trim() || '';
+        return { title, link, desc, source: feed.name, pubDate };
+      }).filter(i => i.title && i.link);
+    } catch {}
+  }
+  return [];
 }
 
 // ── MYMEMORY TRANSLATE ──
