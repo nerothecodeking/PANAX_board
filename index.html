@@ -279,7 +279,10 @@ header{background:var(--surface);border-bottom:2px solid var(--border);padding:0
             <button class="ftab" onclick="setFilter('other',this)">📌 기타</button>
           </div>
         </div>
-        <button class="btn btn-primary" id="news-btn" onclick="loadNews()">↻ 뉴스 불러오기</button>
+        <div style="display:flex;gap:8px;align-items:center;">
+          <button class="btn btn-sm btn-ghost" id="cache-btn" onclick="clearNewsCache()" style="color:var(--muted);display:none;" title="캐시된 뉴스 삭제">🗑 캐시 삭제</button>
+          <button class="btn btn-primary" id="news-btn" onclick="loadNews()">↻ 뉴스 불러오기</button>
+        </div>
       </div>
       <div id="news-container">
         <div class="empty-state">
@@ -355,6 +358,7 @@ let newsData = {};
 let bookmarks = JSON.parse(localStorage.getItem('px_bookmarks') || '[]');
 let savedContents = JSON.parse(localStorage.getItem('px_saved') || '[]');
 let activeFilter = 'all';
+let newsCache = JSON.parse(localStorage.getItem('px_news_cache') || 'null');
 let lastGeneratedContent = null;
 let lastGeneratedContentBm = null;
 
@@ -517,8 +521,28 @@ function extractJSON(raw) {
 }
 
 // ── LOAD NEWS ──
+function clearNewsCache() {
+  if (!confirm('캐시된 뉴스를 삭제하고 새로 불러올까요?')) return;
+  newsCache = null;
+  newsData = {};
+  localStorage.removeItem('px_news_cache');
+  document.getElementById('news-container').innerHTML =
+    '<div class="empty-state"><strong>캐시가 삭제됐어요</strong>뉴스 불러오기를 눌러 새로 수집해주세요.</div>';
+  document.getElementById('cache-btn').style.display = 'none';
+}
+
 async function loadNews() {
   if (!apiKey) { openModal(); return; }
+
+  // Load from cache if available
+  if (newsCache && newsCache.data && Object.keys(newsCache.data).length) {
+    newsData = newsCache.data;
+    renderNews();
+    document.getElementById('cache-btn').style.display = '';
+    showCacheInfo();
+    return;
+  }
+
   const btn = document.getElementById('news-btn');
   btn.disabled = true;
   btn.innerHTML = '<span class="spinner"></span> 수집 중...';
@@ -585,8 +609,21 @@ Respond ONLY as valid JSON, no extra text:
     newsData[cat] = { ...allItems[idx], title_kr: title_kr || allItems[idx].title };
   });
 
+  // Save to cache
+  newsCache = { data: newsData, savedAt: Date.now() };
+  localStorage.setItem('px_news_cache', JSON.stringify(newsCache));
+  document.getElementById('cache-btn').style.display = '';
+
   renderNews();
   btn.disabled = false; btn.innerHTML = '↻ 뉴스 불러오기';
+}
+
+function showCacheInfo() {
+  if (!newsCache || !newsCache.savedAt) return;
+  const diff = Math.floor((Date.now() - newsCache.savedAt) / 60000);
+  const timeStr = diff < 60 ? diff + '분 전' : Math.floor(diff/60) + '시간 전';
+  const cacheBtn = document.getElementById('cache-btn');
+  if (cacheBtn) cacheBtn.title = `캐시 저장: ${timeStr} — 클릭하면 새로 불러올 수 있어요`;
 }
 
 // ── RENDER NEWS ──
@@ -716,65 +753,94 @@ const CONTENT_SYSTEM = `You are creating Instagram card news content for PANAX, 
 
 PANAX brand: confident, warm, inclusive. Informative first, entertaining second. Never offensive, biased, toxic, or sarcastic. Never take sides on controversies — present facts only.
 
-WRITING STYLE — apply to both personas:
+WRITING STYLE — non-negotiable for both personas:
 - Short, rhythmic sentences. One idea per sentence.
 - No slang, no internet abbreviations, no exclamation overload.
-- No overly emotional or dramatic language. Stay grounded.
-- Technical terms must be explained in plain English.
-- Aim for the tone of IGN or The Verge's Instagram — informed but accessible.
-- Each paragraph should be 1-2 sentences max. This is card news, not an article.
+- No emotional, dramatic, or literary openers. Never start with feelings or metaphors.
+- Technical terms must be explained in plain language immediately after use.
+- Tone reference: IGN or The Verge Instagram — informed, direct, accessible.
+- Each section is 1-2 sentences max. This is card news, not a feature article.
 
-TWO PERSONAS — different PERSPECTIVES on the same news (not just different tones):
+THE FIRST SENTENCE IS THE MOST IMPORTANT SENTENCE IN THE ENTIRE PIECE.
+- It must open with the single most surprising, specific, or consequential fact from the article.
+- It must make the reader want to read the next sentence immediately.
+- It must never be a setup, a vague observation, or a scene-setter.
+- Bad: "There's something interesting about how this community responds to waiting."
+- Good: "A Reddit user spent three months mapping star charts just to predict a GTA 6 trailer date."
+Apply this rule strictly to both headline and hook.
 
-SAMMY 🤖 — The Community Angle:
-Covers what this means for the fanbase and gaming community. What are players saying? Why does this matter to the people who play it? Sharp, clear, enthusiastic without being over the top.
+TWO PERSONAS — different PERSPECTIVES, not just different tones:
 
-LEDY 🎮 — The Industry Angle:
-Covers what this means for the game, the developer, or the broader gaming industry. Finds the bigger picture. Calm, thoughtful, precise.
+SAMMY 🤖 — Community Angle:
+What does this mean for players and the fanbase? How is the community reacting, and why? Sharp and direct. No sentimentality.
 
-Structure for each persona:
-- headline: Max 8 words. Punchy and specific. No vague phrases like "This changes everything."
-- hook: One sentence. States the most interesting fact immediately.
-- detail: 1-2 sentences. Key facts, explained simply. No jargon without explanation.
-- outlook: One sentence. What happens next, or why this matters going forward.
+LEDY 🎮 — Industry Angle:
+What does this mean for the game, the studio, or the broader industry? What is the bigger picture? Calm, precise, no literary flourishes.
 
-Category-specific focus:
-- RELEASE: What makes it worth paying attention to. Release date, platform, key feature.
-- COMMUNITY: Why the fanbase reacted this way. What it reveals about the game or its players.
-- CONTROVERSY: Facts only. No judgment. Present what happened and what both sides say.
-- SALE: What the deal is, how long it lasts, who it is for.
-- OTHER: Lead with the most newsworthy angle.
+CATEGORY-SPECIFIC STRUCTURE (adapt per category):
 
-Also generate 3 community comments — short, distinct reactions:
-1. type "agree": supports the news with a clear reason
-2. type "disagree": respectfully pushes back with a specific point
-3. type "funny": dry, witty observation — clever, not silly. No forced humor.
+RELEASE:
+- Sammy hook: What makes this release matter to players right now.
+- Ledy hook: What this release signals about the developer or market.
+- Both detail: Key specs — platform, date, one standout feature.
+- Both outlook: What players or the industry should watch for next.
+
+COMMUNITY:
+- Sammy hook: The specific moment or action that sparked the reaction.
+- Ledy hook: What this community behavior reveals about the game or its audience.
+- Both detail: What actually happened, clearly explained.
+- Both outlook: Where this goes from here — will it grow, fade, or change something?
+
+CONTROVERSY:
+- Sammy hook: What the community is saying and why they care.
+- Ledy hook: What the facts of the situation are, without judgment.
+- Both detail: Both sides of the issue, factually. No opinion.
+- Both outlook: What resolution or next step looks like.
+
+SALE:
+- Sammy hook: The deal itself — what it is, how good it is.
+- Ledy hook: Why this sale matters in context (timing, value, who it is for).
+- Both detail: Conditions, duration, platforms.
+- Both outlook: Whether it is worth acting on and when.
+
+OTHER:
+- Both hook: The most newsworthy fact first.
+- Both detail: Context and key details.
+- Both outlook: Why this matters going forward.
+
+Also generate 3 community comments — short, distinct:
+1. type "agree": supports the news with one clear reason
+2. type "disagree": respectfully pushes back with one specific point
+3. type "funny": one dry, witty line. Clever observation, not a joke setup.
+
+OUTPUT FORMAT — provide English AND Korean together.
+Korean translations must be natural, not literal. Convey the same energy and meaning.
+Korean should read like it was written in Korean, not translated from English.
 
 RULES:
-- English only (translations handled separately)
 - Never quote the article directly (copyright)
-- No slang, no excessive abbreviations, no all-caps for emphasis
-- Creative but believable gamer usernames
+- No slang, abbreviations, or all-caps
+- Creative but believable gamer usernames for comments
 
 Respond ONLY as valid JSON, no markdown, no extra text:
 {
   "category_type": "release|community|controversy|sale|other",
   "sammy": {
-    "headline": "...",
-    "hook": "...",
-    "detail": "...",
-    "outlook": "..."
+    "headline": "...", "headline_kr": "...",
+    "hook": "...", "hook_kr": "...",
+    "detail": "...", "detail_kr": "...",
+    "outlook": "...", "outlook_kr": "..."
   },
   "ledy": {
-    "headline": "...",
-    "hook": "...",
-    "detail": "...",
-    "outlook": "..."
+    "headline": "...", "headline_kr": "...",
+    "hook": "...", "hook_kr": "...",
+    "detail": "...", "detail_kr": "...",
+    "outlook": "...", "outlook_kr": "..."
   },
   "comments": [
-    {"user":"...","type":"agree","text":"..."},
-    {"user":"...","type":"disagree","text":"..."},
-    {"user":"...","type":"funny","text":"..."}
+    {"user":"...","type":"agree","text":"...","text_kr":"..."},
+    {"user":"...","type":"disagree","text":"...","text_kr":"..."},
+    {"user":"...","type":"funny","text":"...","text_kr":"..."}
   ]
 }`;
 
@@ -823,53 +889,29 @@ async function generateContent(news, target, userContent, catId) {
   box.scrollIntoView({ behavior:'smooth', block:'start' });
 
   try {
-    const raw = await callClaude(CONTENT_SYSTEM, userContent, 2000);
+    const raw = await callClaude(CONTENT_SYSTEM, userContent, 2500);
     const content = extractJSON(raw);
 
-    // Translate headlines and paragraphs
-    const toTranslate = {
-      s_headline: content.sammy.headline,
-      s_hook:     content.sammy.hook,
-      s_detail:   content.sammy.detail,
-      s_outlook:  content.sammy.outlook,
-      l_headline: content.ledy.headline,
-      l_hook:     content.ledy.hook,
-      l_detail:   content.ledy.detail,
-      l_outlook:  content.ledy.outlook,
-      c0: content.comments[0]?.text || '',
-      c1: content.comments[1]?.text || '',
-      c2: content.comments[2]?.text || ''
-    };
-
-    const KR_SYS = `Translate the following English gaming journalism texts to natural Korean. 
-NOT word-for-word. Convey the same meaning, tone, and energy naturally in Korean.
-Keep gamer culture references intact. Respond ONLY as valid JSON with same keys.`;
-
-    let kr = {};
-    try {
-      const krRaw = await callClaude(KR_SYS, JSON.stringify(toTranslate), 1500);
-      kr = extractJSON(krRaw);
-    } catch { kr = toTranslate; }
-
-    const result = { content, kr, news, catId };
+    // Korean is now embedded in the content JSON directly
+    const result = { content, news, catId };
     if (target === 'bm') lastGeneratedContentBm = result;
     else lastGeneratedContent = result;
 
-    renderContentHTML(content, kr, bodyId);
+    renderContentHTML(content, bodyId);
   } catch(e) {
     document.getElementById(bodyId).innerHTML =
       `<div class="empty-state"><strong>생성 실패</strong>${e.message}</div>`;
   }
 }
 
-function renderContentHTML(content, kr, bodyId) {
+function renderContentHTML(content, bodyId) {
   const typeMap = {
     agree:    ['cb-agree',    '동의 ✓'],
     disagree: ['cb-disagree', '반대 ✗'],
     funny:    ['cb-funny',    '😂']
   };
 
-  const personaHTML = (key, avatarSrc, name, tag, cardCls, prefix) => {
+  const personaHTML = (key, avatarSrc, name, tag, cardCls) => {
     const c = content[key];
     return `<div class="pcard ${cardCls}">
       <div class="pcard-hdr">
@@ -881,18 +923,18 @@ function renderContentHTML(content, kr, bodyId) {
       </div>
       <div id="persona-${key}">
         <div class="content-headline">${c.headline}</div>
-        <div class="content-headline-kr">${kr[prefix+'headline'] || ''}</div>
+        <div class="content-headline-kr">${c.headline_kr || ''}</div>
         <div class="content-block">
           <div class="content-en">${c.hook}</div>
-          <div class="content-kr">${kr[prefix+'hook'] || ''}</div>
+          <div class="content-kr">${c.hook_kr || ''}</div>
         </div>
         <div class="content-block">
           <div class="content-en">${c.detail}</div>
-          <div class="content-kr">${kr[prefix+'detail'] || ''}</div>
+          <div class="content-kr">${c.detail_kr || ''}</div>
         </div>
         <div class="content-block">
           <div class="content-en">${c.outlook}</div>
-          <div class="content-kr">${kr[prefix+'outlook'] || ''}</div>
+          <div class="content-kr">${c.outlook_kr || ''}</div>
         </div>
       </div>
     </div>`;
@@ -900,21 +942,20 @@ function renderContentHTML(content, kr, bodyId) {
 
   const commentsHTML = (content.comments || []).map(c => {
     const [cls, label] = typeMap[c.type] || ['',''];
-    const krText = c.type === 'agree' ? kr.c0 : c.type === 'disagree' ? kr.c1 : kr.c2;
     return `<div class="cmt">
       <div class="cmt-av">${(c.user||'?')[0].toUpperCase()}</div>
       <div style="flex:1;">
         <div class="cmt-user">${c.user}<span class="cmt-badge ${cls}">${label}</span></div>
         <div class="cmt-en">${c.text}</div>
-        <div class="cmt-kr">${krText || ''}</div>
+        <div class="cmt-kr">${c.text_kr || ''}</div>
       </div>
     </div>`;
   }).join('');
 
   document.getElementById(bodyId).innerHTML = `
     <div class="personas">
-      ${personaHTML('sammy', 'data:image/png;base64,' + SAMMY_IMG, 'Sammy', 'Energetic gaming journalist', 'pcard-sammy', 's_')}
-      ${personaHTML('ledy',  'data:image/png;base64,' + LEDY_IMG,  'Ledy',  'Thoughtful gaming journalist', 'pcard-ledy', 'l_')}
+      ${personaHTML('sammy', 'data:image/png;base64,' + SAMMY_IMG, 'Sammy', 'Energetic gaming journalist', 'pcard-sammy')}
+      ${personaHTML('ledy',  'data:image/png;base64,' + LEDY_IMG,  'Ledy',  'Thoughtful gaming journalist', 'pcard-ledy')}
     </div>
     <div class="comments-sec">
       <div class="comments-title">💬 가상 커뮤니티 반응</div>
@@ -951,7 +992,7 @@ function doSaveContent(result) {
     savedAt: Date.now(),
     newsTitle: news.title,
     newsSource: news.source,
-    content, kr
+    content
   };
   savedContents.unshift(saved);
   localStorage.setItem('px_saved', JSON.stringify(savedContents));
@@ -986,7 +1027,7 @@ function viewSaved(i) {
   if (!s) return;
   const modalBody = document.getElementById('saved-modal-body');
   document.getElementById('saved-modal').classList.remove('hidden');
-  renderContentHTML(s.content, s.kr, 'saved-modal-body');
+  renderContentHTML(s.content, 'saved-modal-body');
 }
 
 function closeSavedModal() { document.getElementById('saved-modal').classList.add('hidden'); }
@@ -1012,6 +1053,13 @@ function closeContentBm() { document.getElementById('content-box-bm').classList.
 
 // ── INIT ──
 initKeys();
+// Load cached news on startup
+if (newsCache && newsCache.data && Object.keys(newsCache.data).length) {
+  newsData = newsCache.data;
+  renderNews();
+  document.getElementById('cache-btn').style.display = '';
+  showCacheInfo();
+}
 </script>
 </body>
 </html>
