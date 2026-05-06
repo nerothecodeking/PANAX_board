@@ -43,7 +43,7 @@ header{background:var(--surface);border-bottom:2px solid var(--border);padding:0
 .btn-icon.saved{color:var(--amber);}
 
 /* LAYOUT */
-.app{max-width:1200px;margin:0 auto;padding:20px 24px;display:flex;flex-direction:column;gap:20px;}
+.app{max-width:1800px;margin:0 auto;padding:20px 32px;display:flex;flex-direction:column;gap:20px;}
 
 /* TABS */
 .main-tabs{background:var(--surface);border-bottom:2px solid var(--border);padding:0 24px;display:flex;gap:0;}
@@ -138,6 +138,9 @@ header{background:var(--surface);border-bottom:2px solid var(--border);padding:0
 .content-kr{font-size:13px;line-height:1.7;color:var(--muted);margin-top:4px;padding-left:12px;border-left:2px solid var(--border2);}
 .content-headline{font-family:'Syne',sans-serif;font-size:17px;font-weight:700;margin-bottom:10px;}
 .content-headline-kr{font-size:14px;color:var(--muted);font-weight:500;margin-bottom:14px;padding-left:12px;border-left:2px solid var(--border2);}
+.content-tagline{margin-top:12px;padding:10px 14px;background:var(--surface2);border-radius:8px;border-left:3px solid var(--accent);}
+.tagline-en{font-size:13px;font-weight:700;color:var(--accent);line-height:1.4;}
+.tagline-kr{font-size:12px;color:var(--muted);margin-top:3px;line-height:1.4;}
 
 /* COMMENTS */
 .comments-sec{border-top:2px solid var(--border);padding-top:18px;}
@@ -200,7 +203,7 @@ header{background:var(--surface);border-bottom:2px solid var(--border);padding:0
 .sec-title b{color:var(--text);}
 
 /* SPLIT LAYOUT */
-.news-split{display:grid;grid-template-columns:1fr 480px;gap:20px;align-items:start;}
+.news-split{display:grid;grid-template-columns:55fr 45fr;gap:24px;align-items:start;}
 .news-left{display:flex;flex-direction:column;gap:20px;min-width:0;}
 .news-right{position:sticky;top:84px;display:flex;flex-direction:column;gap:16px;}
 .content-box-right{background:var(--surface);border:2px solid var(--accent);border-radius:12px;padding:20px;display:none;max-height:calc(100vh - 100px);overflow-y:auto;}
@@ -253,7 +256,7 @@ header{background:var(--surface);border-bottom:2px solid var(--border);padding:0
 </header>
 
 <!-- TABS -->
-<div class="main-tabs">
+<div class="main-tabs" style="max-width:1800px;margin:0 auto;padding:0 32px;">
   <button class="mtab on" onclick="switchTab('news',this)">📰 뉴스 피드</button>
   <button class="mtab" onclick="switchTab('bookmarks',this)">🔖 북마크 <span class="tab-badge" id="bm-badge"></span></button>
   <button class="mtab" onclick="switchTab('saved',this)">📦 저장된 컨텐츠 <span class="tab-badge" id="saved-badge"></span></button>
@@ -781,74 +784,59 @@ const CONTENT_SYSTEM = `You are creating Instagram card news content for PANAX, 
 
 PANAX brand: confident, warm, inclusive. Informative first, entertaining second. Never offensive, biased, toxic, or sarcastic. Never take sides on controversies — present facts only.
 
-WRITING STYLE — non-negotiable for both personas:
-- Short, rhythmic sentences. One idea per sentence.
+WRITING STYLE — non-negotiable:
+- Short, punchy sentences. One idea per sentence. No run-ons.
 - No slang, no internet abbreviations, no exclamation overload.
 - No emotional, dramatic, or literary openers. Never start with feelings or metaphors.
-- Technical terms must be explained in plain language immediately after use.
-- Tone reference: IGN or The Verge Instagram — informed, direct, accessible.
-- Each section is 1-2 sentences max. This is card news, not a feature article.
+- Technical terms must be explained in plain language immediately.
+- Tone: IGN or The Verge Instagram — informed, direct, accessible.
 
-THE FIRST SENTENCE IS THE MOST IMPORTANT SENTENCE IN THE ENTIRE PIECE.
-- It must open with the single most surprising, specific, or consequential fact from the article.
-- It must make the reader want to read the next sentence immediately.
-- It must never be a setup, a vague observation, or a scene-setter.
-- Bad: "There's something interesting about how this community responds to waiting."
-- Good: "A Reddit user spent three months mapping star charts just to predict a GTA 6 trailer date."
-Apply this rule strictly to both headline and hook.
+THE HEADLINE is the single most important element.
+- Maximum 5 words. Hard limit. No exceptions.
+- Must be specific to this story. No generic phrases like "This Changes Everything."
+- Sammy and Ledy can share the same headline if it fits both angles.
+- Bad: "GTA 6 Fan Uses Astrology to Predict the Release Date of Trailer 3"
+- Good: "Fans Chart Stars for GTA 6"
 
-TWO PERSONAS — different PERSPECTIVES, not just different tones:
+THE HOOK (first sentence) is the second most important element.
+- Open with the single most surprising or consequential fact. One sentence only.
+- Never a setup, scene-setter, or observation. Jump straight to the fact.
+- Bad: "There's something interesting about how fans respond to long waits."
+- Good: "A Reddit user spent three months mapping planetary positions to predict a GTA 6 trailer date."
+
+TWO PERSONAS — different PERSPECTIVES on the same news:
 
 SAMMY 🤖 — Community Angle:
-What does this mean for players and the fanbase? How is the community reacting, and why? Sharp and direct. No sentimentality.
+What does this mean for players and the fanbase? Why do people care? Sharp and direct.
 
 LEDY 🎮 — Industry Angle:
-What does this mean for the game, the studio, or the broader industry? What is the bigger picture? Calm, precise, no literary flourishes.
+What does this mean for the game, studio, or industry? The bigger picture. Calm and precise.
 
-CATEGORY-SPECIFIC STRUCTURE (adapt per category):
+STRUCTURE for each persona:
+- headline: Max 5 words. Hard limit. Specific. Grabs attention immediately.
+- hook: ONE sentence only. The most compelling fact, stated immediately. No warmup.
+- detail: ONE sentence only. The single most important supporting fact. Keep it tight.
+- tagline: ONE very short closing line, max 10 words. A punchy takeaway — not a summary, not a prediction. Like a subheading that makes you nod.
 
-RELEASE:
-- Sammy hook: What makes this release matter to players right now.
-- Ledy hook: What this release signals about the developer or market.
-- Both detail: Key specs — platform, date, one standout feature.
-- Both outlook: What players or the industry should watch for next.
+CATEGORY FOCUS:
+- RELEASE: hook = what makes it notable right now. detail = platform/date/key feature. tagline = what to watch next.
+- COMMUNITY: hook = the specific action or moment that sparked it. detail = what happened. tagline = why it resonates.
+- CONTROVERSY: hook = the core dispute in one fact. detail = both sides factually. tagline = neutral, no judgment.
+- SALE: hook = the deal itself. detail = conditions/timing/platforms. tagline = who should care.
+- OTHER: hook = most newsworthy fact. detail = key context. tagline = the bottom line.
 
-COMMUNITY:
-- Sammy hook: The specific moment or action that sparked the reaction.
-- Ledy hook: What this community behavior reveals about the game or its audience.
-- Both detail: What actually happened, clearly explained.
-- Both outlook: Where this goes from here — will it grow, fade, or change something?
+COMMENTS — 3 short reactions:
+1. type "agree": ONE sentence, max 12 words. Clear support with a specific reason.
+2. type "disagree": ONE sentence, max 12 words. Respectful pushback with one specific point.
+3. type "funny": ONE short dry witty line. Clever observation. Not a joke setup.
 
-CONTROVERSY:
-- Sammy hook: What the community is saying and why they care.
-- Ledy hook: What the facts of the situation are, without judgment.
-- Both detail: Both sides of the issue, factually. No opinion.
-- Both outlook: What resolution or next step looks like.
-
-SALE:
-- Sammy hook: The deal itself — what it is, how good it is.
-- Ledy hook: Why this sale matters in context (timing, value, who it is for).
-- Both detail: Conditions, duration, platforms.
-- Both outlook: Whether it is worth acting on and when.
-
-OTHER:
-- Both hook: The most newsworthy fact first.
-- Both detail: Context and key details.
-- Both outlook: Why this matters going forward.
-
-Also generate 3 community comments — short, distinct:
-1. type "agree": supports the news with one clear reason
-2. type "disagree": respectfully pushes back with one specific point
-3. type "funny": one dry, witty line. Clever observation, not a joke setup.
-
-OUTPUT FORMAT — provide English AND Korean together.
-Korean translations must be natural, not literal. Convey the same energy and meaning.
-Korean should read like it was written in Korean, not translated from English.
+OUTPUT FORMAT — English AND Korean together.
+Korean must sound like it was originally written in Korean. Natural, not translated.
 
 RULES:
 - Never quote the article directly (copyright)
-- No slang, abbreviations, or all-caps
-- Creative but believable gamer usernames for comments
+- No slang, no abbreviations, no all-caps
+- Creative but believable gamer usernames
 
 Respond ONLY as valid JSON, no markdown, no extra text:
 {
@@ -857,13 +845,13 @@ Respond ONLY as valid JSON, no markdown, no extra text:
     "headline": "...", "headline_kr": "...",
     "hook": "...", "hook_kr": "...",
     "detail": "...", "detail_kr": "...",
-    "outlook": "...", "outlook_kr": "..."
+    "tagline": "...", "tagline_kr": "..."
   },
   "ledy": {
     "headline": "...", "headline_kr": "...",
     "hook": "...", "hook_kr": "...",
     "detail": "...", "detail_kr": "...",
-    "outlook": "...", "outlook_kr": "..."
+    "tagline": "...", "tagline_kr": "..."
   },
   "comments": [
     {"user":"...","type":"agree","text":"...","text_kr":"..."},
@@ -871,7 +859,6 @@ Respond ONLY as valid JSON, no markdown, no extra text:
     {"user":"...","type":"funny","text":"...","text_kr":"..."}
   ]
 }`;
-
 async function generateFromCard(catId) {
   const n = newsData[catId];
   if (!n) return;
@@ -965,9 +952,9 @@ function renderContentHTML(content, bodyId) {
           <div class="content-en">${c.detail}</div>
           <div class="content-kr">${c.detail_kr || ''}</div>
         </div>
-        <div class="content-block">
-          <div class="content-en">${c.outlook}</div>
-          <div class="content-kr">${c.outlook_kr || ''}</div>
+        <div class="content-tagline">
+          <div class="tagline-en">${c.tagline || c.outlook || ''}</div>
+          <div class="tagline-kr">${c.tagline_kr || c.outlook_kr || ''}</div>
         </div>
       </div>
     </div>`;
