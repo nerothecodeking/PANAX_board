@@ -4,807 +4,553 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>PANAX — Content Board</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
-  :root {
-    --bg: #0a0a0f;
-    --surface: #111118;
-    --surface2: #18181f;
-    --border: rgba(255,255,255,0.07);
-    --border2: rgba(255,255,255,0.12);
-    --text: #f0f0f5;
-    --muted: #7a7a8a;
-    --dim: #3a3a4a;
-    --accent: #7c6cff;
-    --accent2: #a594ff;
-    --green: #4ade80;
-    --amber: #fbbf24;
-    --red: #f87171;
-    --blue: #60a5fa;
-  }
-
-  * { box-sizing: border-box; margin: 0; padding: 0; }
-
-  body {
-    font-family: 'DM Sans', sans-serif;
-    background: var(--bg);
-    color: var(--text);
-    min-height: 100vh;
-    overflow-x: hidden;
-  }
-
-  /* Subtle grid background */
-  body::before {
-    content: '';
-    position: fixed;
-    inset: 0;
-    background-image:
-      linear-gradient(rgba(124,108,255,0.03) 1px, transparent 1px),
-      linear-gradient(90deg, rgba(124,108,255,0.03) 1px, transparent 1px);
-    background-size: 40px 40px;
-    pointer-events: none;
-    z-index: 0;
-  }
-
-  /* ── HEADER ── */
-  header {
-    position: sticky;
-    top: 0;
-    z-index: 100;
-    background: rgba(10,10,15,0.85);
-    backdrop-filter: blur(16px);
-    border-bottom: 1px solid var(--border);
-    padding: 0 2rem;
-    height: 56px;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-  }
-
-  .logo {
-    font-family: 'Syne', sans-serif;
-    font-weight: 800;
-    font-size: 18px;
-    letter-spacing: 0.12em;
-    color: var(--text);
-    display: flex;
-    align-items: center;
-    gap: 10px;
-  }
-
-  .logo-dot {
-    width: 8px; height: 8px;
-    border-radius: 50%;
-    background: var(--accent);
-    box-shadow: 0 0 8px var(--accent);
-    animation: pulse 2s ease-in-out infinite;
-  }
-
-  @keyframes pulse {
-    0%, 100% { opacity: 1; transform: scale(1); }
-    50% { opacity: 0.6; transform: scale(0.8); }
-  }
-
-  .header-right { display: flex; align-items: center; gap: 10px; }
-
-  .api-status {
-    font-size: 12px;
-    color: var(--muted);
-    display: flex;
-    align-items: center;
-    gap: 6px;
-  }
-
-  .status-dot {
-    width: 6px; height: 6px;
-    border-radius: 50%;
-    background: var(--dim);
-  }
-
-  .status-dot.active { background: var(--green); box-shadow: 0 0 6px var(--green); }
-
-  .btn {
-    font-family: 'DM Sans', sans-serif;
-    font-size: 13px;
-    font-weight: 500;
-    padding: 7px 14px;
-    border-radius: 8px;
-    border: 1px solid var(--border2);
-    background: var(--surface2);
-    color: var(--text);
-    cursor: pointer;
-    transition: all 0.15s;
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-  }
-
-  .btn:hover { background: var(--surface); border-color: rgba(255,255,255,0.2); }
-  .btn:active { transform: scale(0.97); }
-
-  .btn-primary {
-    background: var(--accent);
-    border-color: var(--accent);
-    color: #fff;
-  }
-
-  .btn-primary:hover { background: var(--accent2); border-color: var(--accent2); }
-
-  .btn-sm { font-size: 12px; padding: 5px 10px; border-radius: 6px; }
-
-  /* ── MAIN LAYOUT ── */
-  .app {
-    position: relative;
-    z-index: 1;
-    display: grid;
-    grid-template-columns: 1fr 320px;
-    gap: 0;
-    height: calc(100vh - 56px);
-  }
-
-  /* ── LEFT: NEWS PANEL ── */
-  .news-panel {
-    border-right: 1px solid var(--border);
-    display: flex;
-    flex-direction: column;
-    overflow: hidden;
-  }
-
-  .panel-toolbar {
-    padding: 16px 20px 12px;
-    border-bottom: 1px solid var(--border);
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    flex-shrink: 0;
-  }
-
-  .panel-label {
-    font-family: 'Syne', sans-serif;
-    font-size: 11px;
-    font-weight: 700;
-    letter-spacing: 0.12em;
-    color: var(--muted);
-    text-transform: uppercase;
-  }
-
-  .filter-tabs {
-    display: flex;
-    gap: 4px;
-    padding: 10px 20px;
-    border-bottom: 1px solid var(--border);
-    flex-shrink: 0;
-    overflow-x: auto;
-  }
-
-  .filter-tab {
-    font-size: 12px;
-    padding: 4px 12px;
-    border-radius: 20px;
-    border: 1px solid var(--border);
-    background: transparent;
-    color: var(--muted);
-    cursor: pointer;
-    white-space: nowrap;
-    transition: all 0.15s;
-    font-family: 'DM Sans', sans-serif;
-  }
-
-  .filter-tab:hover { color: var(--text); border-color: var(--border2); }
-  .filter-tab.active { background: var(--accent); border-color: var(--accent); color: #fff; }
-
-  .news-scroll {
-    flex: 1;
-    overflow-y: auto;
-    padding: 12px;
-  }
-
-  .news-scroll::-webkit-scrollbar { width: 4px; }
-  .news-scroll::-webkit-scrollbar-track { background: transparent; }
-  .news-scroll::-webkit-scrollbar-thumb { background: var(--dim); border-radius: 2px; }
-
-  .news-card {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 10px;
-    padding: 14px;
-    margin-bottom: 8px;
-    cursor: pointer;
-    transition: all 0.15s;
-    animation: fadeUp 0.3s ease both;
-  }
-
-  @keyframes fadeUp {
-    from { opacity: 0; transform: translateY(8px); }
-    to { opacity: 1; transform: translateY(0); }
-  }
-
-  .news-card:hover { border-color: var(--border2); background: var(--surface2); }
-  .news-card.selected { border-color: var(--accent); }
-
-  .card-meta {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    margin-bottom: 8px;
-  }
-
-  .badge {
-    font-size: 10px;
-    font-weight: 500;
-    padding: 2px 8px;
-    border-radius: 10px;
-    font-family: 'Syne', sans-serif;
-    letter-spacing: 0.05em;
-  }
-
-  .badge-release { background: rgba(96,165,250,0.12); color: var(--blue); border: 1px solid rgba(96,165,250,0.2); }
-  .badge-trend   { background: rgba(124,108,255,0.12); color: var(--accent2); border: 1px solid rgba(124,108,255,0.2); }
-  .badge-sale    { background: rgba(74,222,128,0.10); color: var(--green); border: 1px solid rgba(74,222,128,0.2); }
-  .badge-esports { background: rgba(251,191,36,0.10); color: var(--amber); border: 1px solid rgba(251,191,36,0.2); }
-
-  .card-source { font-size: 11px; color: var(--muted); }
-  .card-time   { font-size: 11px; color: var(--dim); margin-left: auto; }
-
-  .card-title { font-size: 14px; font-weight: 500; line-height: 1.45; margin-bottom: 5px; }
-  .card-desc  { font-size: 12px; color: var(--muted); line-height: 1.55; }
-
-  .card-actions {
-    display: flex;
-    gap: 6px;
-    margin-top: 10px;
-  }
-
-  /* ── RIGHT: SIDE PANEL ── */
-  .side-panel {
-    display: flex;
-    flex-direction: column;
-    overflow: hidden;
-  }
-
-  .side-section {
-    border-bottom: 1px solid var(--border);
-    padding: 16px;
-    flex-shrink: 0;
-  }
-
-  .side-section-title {
-    font-family: 'Syne', sans-serif;
-    font-size: 10px;
-    font-weight: 700;
-    letter-spacing: 0.12em;
-    color: var(--muted);
-    text-transform: uppercase;
-    margin-bottom: 12px;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-  }
-
-  /* AI Output */
-  .ai-box {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 8px;
-    padding: 12px;
-    min-height: 100px;
-  }
-
-  .ai-empty {
-    font-size: 12px;
-    color: var(--dim);
-    text-align: center;
-    padding: 20px 0;
-    line-height: 1.6;
-  }
-
-  .ai-idea-item {
-    margin-bottom: 12px;
-    padding-bottom: 12px;
-    border-bottom: 1px solid var(--border);
-  }
-
-  .ai-idea-item:last-child { margin-bottom: 0; padding-bottom: 0; border-bottom: none; }
-
-  .ai-platform {
-    font-size: 11px;
-    font-weight: 500;
-    color: var(--accent2);
-    margin-bottom: 4px;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-  }
-
-  .ai-hook { font-size: 13px; font-weight: 500; margin-bottom: 3px; }
-  .ai-concept { font-size: 12px; color: var(--muted); line-height: 1.5; }
-
-  /* Memo */
-  .memo-textarea {
-    width: 100%;
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 8px;
-    padding: 10px;
-    color: var(--text);
-    font-family: 'DM Sans', sans-serif;
-    font-size: 13px;
-    resize: none;
-    min-height: 80px;
-    line-height: 1.5;
-    transition: border-color 0.15s;
-  }
-
-  .memo-textarea:focus { outline: none; border-color: var(--accent); }
-  .memo-textarea::placeholder { color: var(--dim); }
-
-  .channel-row {
-    display: flex;
-    gap: 6px;
-    margin: 8px 0;
-  }
-
-  .ch-btn {
-    font-size: 11px;
-    padding: 4px 10px;
-    border-radius: 20px;
-    border: 1px solid var(--border);
-    background: transparent;
-    color: var(--muted);
-    cursor: pointer;
-    font-family: 'DM Sans', sans-serif;
-    transition: all 0.15s;
-  }
-
-  .ch-btn:hover { border-color: var(--border2); color: var(--text); }
-  .ch-btn.yt-on  { background: rgba(248,113,113,0.12); border-color: rgba(248,113,113,0.3); color: var(--red); }
-  .ch-btn.x-on   { background: rgba(240,240,245,0.08); border-color: rgba(240,240,245,0.2); color: var(--text); }
-  .ch-btn.ig-on  { background: rgba(251,191,36,0.10); border-color: rgba(251,191,36,0.25); color: var(--amber); }
-
-  /* Saved ideas */
-  .ideas-scroll {
-    flex: 1;
-    overflow-y: auto;
-    padding: 12px;
-  }
-
-  .ideas-scroll::-webkit-scrollbar { width: 4px; }
-  .ideas-scroll::-webkit-scrollbar-thumb { background: var(--dim); border-radius: 2px; }
-
-  .idea-item {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 8px;
-    padding: 10px 12px;
-    margin-bottom: 6px;
-    position: relative;
-    animation: fadeUp 0.2s ease both;
-  }
-
-  .idea-chips {
-    display: flex;
-    gap: 4px;
-    margin-bottom: 5px;
-    flex-wrap: wrap;
-  }
-
-  .idea-chip {
-    font-size: 10px;
-    padding: 2px 7px;
-    border-radius: 10px;
-  }
-
-  .idea-text { font-size: 12px; line-height: 1.5; color: var(--text); padding-right: 20px; }
-
-  .idea-del {
-    position: absolute;
-    top: 8px; right: 8px;
-    background: none;
-    border: none;
-    color: var(--dim);
-    cursor: pointer;
-    font-size: 14px;
-    line-height: 1;
-    transition: color 0.15s;
-  }
-
-  .idea-del:hover { color: var(--muted); }
-
-  .empty-state {
-    font-size: 12px;
-    color: var(--dim);
-    text-align: center;
-    padding: 24px 0;
-    line-height: 1.7;
-  }
-
-  /* ── API KEY MODAL ── */
-  .modal-overlay {
-    position: fixed;
-    inset: 0;
-    background: rgba(0,0,0,0.7);
-    backdrop-filter: blur(8px);
-    z-index: 200;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-  }
-
-  .modal-overlay.hidden { display: none; }
-
-  .modal {
-    background: var(--surface);
-    border: 1px solid var(--border2);
-    border-radius: 16px;
-    padding: 28px;
-    width: 420px;
-    max-width: 90vw;
-  }
-
-  .modal-title {
-    font-family: 'Syne', sans-serif;
-    font-size: 18px;
-    font-weight: 700;
-    margin-bottom: 8px;
-  }
-
-  .modal-desc {
-    font-size: 13px;
-    color: var(--muted);
-    line-height: 1.6;
-    margin-bottom: 20px;
-  }
-
-  .modal-input {
-    width: 100%;
-    background: var(--bg);
-    border: 1px solid var(--border2);
-    border-radius: 8px;
-    padding: 10px 14px;
-    color: var(--text);
-    font-family: 'DM Sans', sans-serif;
-    font-size: 13px;
-    margin-bottom: 12px;
-    transition: border-color 0.15s;
-  }
-
-  .modal-input:focus { outline: none; border-color: var(--accent); }
-
-  .modal-note {
-    font-size: 11px;
-    color: var(--dim);
-    margin-bottom: 16px;
-    line-height: 1.6;
-  }
-
-  /* Loading */
-  @keyframes spin { to { transform: rotate(360deg); } }
-  .spinner {
-    width: 16px; height: 16px;
-    border: 2px solid var(--dim);
-    border-top-color: var(--accent2);
-    border-radius: 50%;
-    animation: spin 0.6s linear infinite;
-    display: inline-block;
-  }
-
-  .loading-row {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    font-size: 13px;
-    color: var(--muted);
-    padding: 20px;
-    justify-content: center;
-  }
-
-  /* Scrollbar global */
-  ::-webkit-scrollbar { width: 4px; }
-  ::-webkit-scrollbar-track { background: transparent; }
-  ::-webkit-scrollbar-thumb { background: var(--dim); border-radius: 2px; }
+:root {
+  --bg: #f5f4f0;
+  --surface: #ffffff;
+  --surface2: #f0efe9;
+  --border: #e2e0d8;
+  --border2: #ccc9be;
+  --text: #1a1a1a;
+  --muted: #6b6b6b;
+  --dim: #a0a0a0;
+  --accent: #2952ff;
+  --accent-light: #eef1ff;
+  --green: #16a34a;
+  --green-light: #dcfce7;
+  --amber: #d97706;
+  --amber-light: #fef3c7;
+  --red: #dc2626;
+  --red-light: #fee2e2;
+  --blue: #2563eb;
+  --blue-light: #dbeafe;
+  --purple: #7c3aed;
+  --purple-light: #ede9fe;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: 'Plus Jakarta Sans', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
+
+header {
+  background: var(--surface);
+  border-bottom: 2px solid var(--border);
+  padding: 0 24px;
+  height: 64px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  position: sticky; top: 0; z-index: 100;
+}
+.logo { font-family: 'Syne', sans-serif; font-weight: 800; font-size: 22px; letter-spacing: 0.08em; color: var(--text); display: flex; align-items: center; gap: 10px; }
+.logo-badge { background: var(--accent); color: #fff; font-size: 10px; font-weight: 700; padding: 2px 8px; border-radius: 4px; letter-spacing: 0.08em; }
+.header-actions { display: flex; align-items: center; gap: 10px; }
+.api-status { display: flex; align-items: center; gap: 6px; font-size: 13px; color: var(--muted); }
+.status-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--dim); flex-shrink: 0; }
+.status-dot.ok { background: var(--green); }
+
+.btn { font-family: 'Plus Jakarta Sans', sans-serif; font-size: 14px; font-weight: 600; padding: 8px 16px; border-radius: 8px; border: 2px solid var(--border2); background: var(--surface); color: var(--text); cursor: pointer; transition: all 0.15s; display: inline-flex; align-items: center; gap: 6px; }
+.btn:hover { background: var(--surface2); border-color: #999; }
+.btn:active { transform: scale(0.97); }
+.btn-primary { background: var(--accent); border-color: var(--accent); color: #fff; }
+.btn-primary:hover { background: #1a3de0; border-color: #1a3de0; }
+.btn-sm { font-size: 12px; font-weight: 600; padding: 6px 12px; border-radius: 6px; }
+.btn-ghost { border-color: transparent; background: transparent; }
+.btn-ghost:hover { background: var(--surface2); border-color: var(--border); }
+
+.app { max-width: 1400px; margin: 0 auto; padding: 20px 24px; display: flex; flex-direction: column; gap: 20px; }
+
+/* TOP 5 */
+.top5-section { background: var(--surface); border: 2px solid var(--border); border-radius: 12px; padding: 20px 24px; }
+.section-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; }
+.section-title { font-family: 'Syne', sans-serif; font-size: 13px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); display: flex; align-items: center; gap: 8px; }
+.section-title span { color: var(--text); }
+.top5-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 12px; }
+.top5-card { background: var(--surface2); border: 2px solid var(--border); border-radius: 10px; padding: 14px; text-align: center; }
+.top5-rank { font-family: 'Syne', sans-serif; font-size: 32px; font-weight: 800; color: var(--border2); line-height: 1; margin-bottom: 8px; }
+.top5-rank.gold { color: #f59e0b; }
+.top5-name { font-size: 14px; font-weight: 700; color: var(--text); margin-bottom: 4px; line-height: 1.3; }
+.top5-platform { font-size: 12px; color: var(--muted); margin-bottom: 6px; }
+.top5-why { font-size: 11px; color: var(--dim); line-height: 1.4; }
+.top5-loading { text-align: center; padding: 24px; color: var(--muted); font-size: 14px; grid-column: span 5; }
+
+/* NEWS */
+.news-section { background: var(--surface); border: 2px solid var(--border); border-radius: 12px; overflow: hidden; }
+.news-toolbar { padding: 16px 24px; border-bottom: 2px solid var(--border); display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px; }
+.news-filters { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.period-select { font-family: 'Plus Jakarta Sans', sans-serif; font-size: 13px; font-weight: 600; padding: 7px 14px; border: 2px solid var(--border2); border-radius: 8px; background: var(--surface); color: var(--text); cursor: pointer; }
+.filter-tabs { display: flex; gap: 4px; flex-wrap: wrap; }
+.ftab { font-size: 13px; font-weight: 600; padding: 6px 14px; border-radius: 20px; border: 2px solid var(--border); background: transparent; color: var(--muted); cursor: pointer; transition: all 0.15s; font-family: 'Plus Jakarta Sans', sans-serif; }
+.ftab:hover { border-color: var(--text); color: var(--text); }
+.ftab.active { background: var(--text); border-color: var(--text); color: #fff; }
+
+.news-category-section { padding: 20px 24px; border-bottom: 1px solid var(--border); }
+.news-category-section:last-child { border-bottom: none; }
+.cat-header { display: flex; align-items: center; gap: 10px; margin-bottom: 14px; }
+.cat-label { font-family: 'Syne', sans-serif; font-size: 12px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; padding: 5px 12px; border-radius: 5px; }
+.cat-release     { background: var(--blue-light);   color: var(--blue); }
+.cat-community   { background: var(--purple-light); color: var(--purple); }
+.cat-controversy { background: var(--red-light);    color: var(--red); }
+.cat-sale        { background: var(--green-light);  color: var(--green); }
+.cat-other       { background: var(--surface2); color: var(--muted); border: 1px solid var(--border2); }
+.cat-count       { font-size: 13px; color: var(--muted); font-weight: 500; }
+
+.news-cards { display: flex; flex-direction: column; gap: 10px; }
+.news-card { background: var(--surface2); border: 2px solid var(--border); border-radius: 10px; padding: 18px; transition: all 0.15s; }
+.news-card:hover { border-color: var(--accent); }
+.news-card-meta { display: flex; align-items: center; gap: 8px; margin-bottom: 10px; }
+.news-source { font-size: 12px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: 0.05em; }
+.news-time { font-size: 12px; color: var(--dim); margin-left: auto; }
+.news-title-en { font-size: 16px; font-weight: 700; line-height: 1.4; color: var(--text); margin-bottom: 3px; }
+.news-title-kr { font-size: 13px; color: var(--muted); line-height: 1.4; margin-bottom: 10px; font-style: italic; }
+.news-desc-en { font-size: 14px; color: var(--text); line-height: 1.6; margin-bottom: 3px; }
+.news-desc-kr { font-size: 13px; color: var(--muted); line-height: 1.6; margin-bottom: 12px; font-style: italic; }
+.news-link { font-size: 13px; color: var(--accent); font-weight: 600; text-decoration: none; display: inline-flex; align-items: center; gap: 4px; margin-bottom: 12px; }
+.news-link:hover { text-decoration: underline; }
+.news-actions { display: flex; gap: 8px; }
+
+/* CONTENT OUTPUT */
+.content-output { background: var(--surface); border: 2px solid var(--accent); border-radius: 12px; padding: 24px; display: none; }
+.content-output.visible { display: block; }
+.content-header { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 20px; gap: 12px; }
+.content-title { font-family: 'Syne', sans-serif; font-size: 18px; font-weight: 700; }
+.content-source { font-size: 13px; font-weight: 400; color: var(--muted); margin-top: 4px; }
+
+.personas-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 20px; }
+.persona-card { border: 2px solid var(--border); border-radius: 10px; padding: 18px; }
+.persona-sammy { border-color: #93c5fd; background: #eff6ff; }
+.persona-ledy  { border-color: #c4b5fd; background: #faf5ff; }
+.persona-header { display: flex; align-items: center; gap: 10px; margin-bottom: 14px; }
+.persona-avatar { width: 44px; height: 44px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 22px; flex-shrink: 0; }
+.sammy-av { background: #dbeafe; }
+.ledy-av  { background: #f3e8ff; }
+.persona-name { font-family: 'Syne', sans-serif; font-size: 16px; font-weight: 700; }
+.persona-tag  { font-size: 12px; color: var(--muted); }
+.persona-text { font-size: 15px; line-height: 1.75; color: var(--text); white-space: pre-wrap; }
+
+.comments-section { border-top: 2px solid var(--border); padding-top: 18px; }
+.comments-title { font-family: 'Syne', sans-serif; font-size: 13px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); margin-bottom: 14px; }
+.comment-item { display: flex; gap: 12px; margin-bottom: 10px; padding: 14px; background: var(--surface2); border-radius: 8px; border: 1px solid var(--border); }
+.comment-avatar { width: 38px; height: 38px; border-radius: 50%; background: var(--border2); display: flex; align-items: center; justify-content: center; font-size: 15px; font-weight: 700; color: var(--muted); flex-shrink: 0; }
+.comment-user { font-size: 13px; font-weight: 700; color: var(--text); margin-bottom: 4px; }
+.comment-type { font-size: 11px; font-weight: 600; padding: 2px 7px; border-radius: 4px; margin-left: 6px; }
+.type-agree    { background: var(--green-light); color: var(--green); }
+.type-disagree { background: var(--red-light);   color: var(--red); }
+.type-funny    { background: var(--amber-light);  color: var(--amber); }
+.comment-text { font-size: 14px; color: var(--text); line-height: 1.55; }
+.copy-btn { font-size: 12px; font-weight: 600; padding: 5px 12px; border-radius: 5px; border: 1px solid var(--border2); background: var(--surface); color: var(--muted); cursor: pointer; transition: all 0.15s; margin-left: auto; flex-shrink: 0; }
+.copy-btn:hover { background: var(--surface2); color: var(--text); }
+
+/* MODAL */
+.modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.45); backdrop-filter: blur(4px); z-index: 200; display: flex; align-items: center; justify-content: center; }
+.modal-overlay.hidden { display: none; }
+.modal { background: var(--surface); border: 2px solid var(--border); border-radius: 16px; padding: 28px; width: 480px; max-width: 90vw; max-height: 90vh; overflow-y: auto; }
+.modal-title { font-family: 'Syne', sans-serif; font-size: 20px; font-weight: 700; margin-bottom: 6px; }
+.modal-desc { font-size: 14px; color: var(--muted); line-height: 1.6; margin-bottom: 20px; }
+.modal-label { font-size: 13px; font-weight: 600; color: var(--text); margin-bottom: 6px; display: block; margin-top: 12px; }
+.modal-input { width: 100%; background: var(--surface2); border: 2px solid var(--border2); border-radius: 8px; padding: 10px 14px; color: var(--text); font-family: 'Plus Jakarta Sans', sans-serif; font-size: 14px; transition: border-color 0.15s; }
+.modal-input:focus { outline: none; border-color: var(--accent); }
+.modal-note { font-size: 12px; color: var(--amber); margin: 14px 0; line-height: 1.6; background: var(--amber-light); padding: 10px 14px; border-radius: 6px; }
+.modal-actions { display: flex; gap: 8px; margin-top: 16px; }
+
+.loading-box { text-align: center; padding: 48px 24px; color: var(--muted); font-size: 15px; }
+.spinner { display: inline-block; width: 20px; height: 20px; border: 3px solid var(--border2); border-top-color: var(--accent); border-radius: 50%; animation: spin 0.6s linear infinite; margin-right: 8px; vertical-align: middle; }
+@keyframes spin { to { transform: rotate(360deg); } }
+@keyframes fadeUp { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+.fade-up { animation: fadeUp 0.3s ease both; }
+
+.empty-box { text-align: center; padding: 48px 24px; color: var(--muted); }
+.empty-box strong { display: block; font-size: 16px; font-weight: 700; color: var(--text); margin-bottom: 8px; }
 </style>
 </head>
 <body>
 
-<!-- API Key Modal -->
+<!-- MODAL -->
 <div class="modal-overlay" id="modal">
   <div class="modal">
-    <div class="modal-title">Welcome to PANAX Board</div>
-    <div class="modal-desc">Enter your Anthropic API key to enable AI-powered news curation and content idea generation.</div>
-    <input class="modal-input" type="password" id="api-key-input" placeholder="sk-ant-..." />
-    <div class="modal-note">🔒 Your key is stored only in your browser's local storage and never sent anywhere except Anthropic's API.</div>
-    <div style="display:flex; gap:8px;">
-      <button class="btn btn-primary" style="flex:1;" onclick="saveApiKey()">Save & Start</button>
-      <button class="btn" onclick="document.getElementById('modal').classList.add('hidden')">Skip</button>
+    <div class="modal-title">⚙ PANAX Board Setup</div>
+    <div class="modal-desc">API 키를 입력해주세요. 모든 키는 이 브라우저에만 저장되며 GitHub 파일에는 포함되지 않습니다.</div>
+    <label class="modal-label">Anthropic API Key <span style="color:var(--red);">*필수</span></label>
+    <input class="modal-input" type="password" id="key-anthropic" placeholder="sk-ant-..." />
+    <label class="modal-label">Twitch Client ID</label>
+    <input class="modal-input" type="password" id="key-twitch-id" placeholder="Twitch Client ID" />
+    <label class="modal-label">Twitch Client Secret</label>
+    <input class="modal-input" type="password" id="key-twitch-secret" placeholder="Twitch Client Secret" />
+    <label class="modal-label">YouTube Data API Key</label>
+    <input class="modal-input" type="password" id="key-youtube" placeholder="AIza..." />
+    <div class="modal-note">🔒 모든 키는 브라우저 로컬스토리지에만 저장됩니다. 외부 서버나 GitHub에 전송되지 않습니다.</div>
+    <div class="modal-actions">
+      <button class="btn btn-primary" style="flex:1;" onclick="saveKeys()">저장하고 시작</button>
+      <button class="btn" onclick="closeModal()">나중에</button>
     </div>
   </div>
 </div>
 
-<!-- Header -->
+<!-- HEADER -->
 <header>
-  <div class="logo">
-    <div class="logo-dot"></div>
-    PANAX BOARD
-  </div>
-  <div class="header-right">
+  <div class="logo">PANAX <span class="logo-badge">BOARD</span></div>
+  <div class="header-actions">
     <div class="api-status">
-      <div class="status-dot" id="status-dot"></div>
-      <span id="status-label">No API key</span>
+      <div class="status-dot" id="dot-anthropic"></div><span>Claude</span>
+      <div class="status-dot" id="dot-twitch" style="margin-left:10px;"></div><span>Twitch</span>
+      <div class="status-dot" id="dot-youtube" style="margin-left:10px;"></div><span>YouTube</span>
     </div>
-    <button class="btn btn-sm" onclick="openApiModal()">⚙ API Key</button>
+    <button class="btn btn-sm" onclick="openModal()">⚙ API Keys</button>
   </div>
 </header>
 
-<!-- Main App -->
 <div class="app">
 
-  <!-- LEFT: News Feed -->
-  <div class="news-panel">
-    <div class="panel-toolbar">
-      <div class="panel-label">Today's Gaming News</div>
-      <button class="btn btn-sm btn-primary" id="refresh-btn" onclick="fetchNews()">↻ Refresh</button>
+  <!-- TOP 5 -->
+  <div class="top5-section">
+    <div class="section-header">
+      <div class="section-title">🔥 <span>Top 5 Games Right Now</span></div>
+      <button class="btn btn-sm" onclick="loadTop5()">↻ Refresh</button>
     </div>
-    <div class="filter-tabs">
-      <button class="filter-tab active" onclick="setFilter('all', this)">All</button>
-      <button class="filter-tab" onclick="setFilter('release', this)">🎮 Releases</button>
-      <button class="filter-tab" onclick="setFilter('trend', this)">🔥 Community</button>
-      <button class="filter-tab" onclick="setFilter('sale', this)">🏷 Sales & Events</button>
-      <button class="filter-tab" onclick="setFilter('esports', this)">🏆 Esports</button>
+    <div class="top5-grid" id="top5-grid">
+      <div class="top5-loading">Refresh 버튼을 클릭해 실시간 Top 5를 불러오세요</div>
     </div>
-    <div class="news-scroll" id="news-list">
-      <div class="empty-state" style="padding-top:40px;">
-        Hit <strong style="color:var(--accent2);">Refresh</strong> to load today's gaming news.<br><br>
-        Make sure your API key is set first.
+  </div>
+
+  <!-- NEWS -->
+  <div class="news-section">
+    <div class="news-toolbar">
+      <div class="news-filters">
+        <select class="period-select" id="period-select">
+          <option value="1">최근 1일</option>
+          <option value="3">최근 3일</option>
+        </select>
+        <div class="filter-tabs">
+          <button class="ftab active" onclick="setFilter('all',this)">전체</button>
+          <button class="ftab" onclick="setFilter('release',this)">🎮 릴리즈</button>
+          <button class="ftab" onclick="setFilter('community',this)">💬 커뮤니티</button>
+          <button class="ftab" onclick="setFilter('controversy',this)">⚠️ 논란</button>
+          <button class="ftab" onclick="setFilter('sale',this)">🏷 세일</button>
+          <button class="ftab" onclick="setFilter('other',this)">📌 기타</button>
+        </div>
+      </div>
+      <button class="btn btn-primary" id="news-btn" onclick="loadNews()">↻ 뉴스 불러오기</button>
+    </div>
+    <div id="news-container">
+      <div class="empty-box">
+        <strong>뉴스를 불러와주세요</strong>
+        기간을 선택하고 '뉴스 불러오기'를 클릭하세요
       </div>
     </div>
   </div>
 
-  <!-- RIGHT: Side Panel -->
-  <div class="side-panel">
-
-    <!-- AI Idea Output -->
-    <div class="side-section" style="flex-shrink:0;">
-      <div class="side-section-title">✦ AI Content Idea</div>
-      <div class="ai-box" id="ai-output">
-        <div class="ai-empty">Click <strong style="color:var(--accent2);">AI Idea</strong> on any news card<br>to generate PANAX content ideas</div>
+  <!-- CONTENT OUTPUT -->
+  <div class="content-output" id="content-output">
+    <div class="content-header">
+      <div>
+        <div class="content-title">📱 컨텐츠 생성 결과</div>
+        <div class="content-source" id="content-source"></div>
       </div>
+      <button class="btn btn-sm btn-ghost" onclick="closeContent()">✕ 닫기</button>
     </div>
-
-    <!-- Memo -->
-    <div class="side-section" style="flex-shrink:0;">
-      <div class="side-section-title">✎ Quick Memo</div>
-      <textarea class="memo-textarea" id="memo-text" placeholder="Drop your idea here..."></textarea>
-      <div class="channel-row">
-        <button class="ch-btn" id="ch-yt" onclick="toggleCh('yt')">YouTube</button>
-        <button class="ch-btn" id="ch-x"  onclick="toggleCh('x')">X</button>
-        <button class="ch-btn" id="ch-ig" onclick="toggleCh('ig')">Instagram</button>
-        <button class="btn btn-sm btn-primary" style="margin-left:auto;" onclick="saveMemo()">Save</button>
-      </div>
-    </div>
-
-    <!-- Saved Ideas -->
-    <div class="side-section-title" style="padding: 14px 16px 0; flex-shrink:0;">☰ Saved Ideas</div>
-    <div class="ideas-scroll" id="ideas-list">
-      <div class="empty-state">No ideas saved yet</div>
-    </div>
-
+    <div id="content-body"></div>
   </div>
+
 </div>
 
 <script>
-const SYSTEM_NEWS = `You are a gaming news curator for PANAX, a cross-platform gamer community app. Generate exactly 6 relevant gaming news items from today. Mix these categories: game releases/updates (release), community trends from Reddit/X (trend), sales and events (sale), esports news (esports). Use real game titles and real platforms (PlayStation, Xbox, Switch, PC). Make titles punchy and engaging. Respond ONLY in this exact JSON, no extra text: {"news":[{"id":1,"title":"...","desc":"one or two sentence summary","category":"release","source":"IGN","time":"2h ago"},{"id":2,"title":"...","desc":"...","category":"trend","source":"Reddit","time":"4h ago"},{"id":3,"title":"...","desc":"...","category":"sale","source":"Steam","time":"1h ago"},{"id":4,"title":"...","desc":"...","category":"esports","source":"ESL","time":"3h ago"},{"id":5,"title":"...","desc":"...","category":"release","source":"Kotaku","time":"5h ago"},{"id":6,"title":"...","desc":"...","category":"trend","source":"X","time":"6h ago"}]}`;
-
-const SYSTEM_IDEA = `You are a content strategist for PANAX — a gamer-built social platform that breaks platform barriers between PlayStation, Xbox, Switch, and PC communities. Brand voice: confident playfulness. Fun but not childish. Warm, inclusive, clever insider humor, never sarcastic or toxic. Core features: game ratings/reviews, play history, wishlists, game discovery, connecting players. Target: English-speaking global gamers. Given a news item, generate 3 content ideas — one each for YouTube Shorts, X/Twitter, and Instagram — that fit PANAX's community-first brand. Respond ONLY in this JSON, no extra text: {"youtube":{"hook":"...","concept":"..."},"twitter":{"hook":"...","concept":"..."},"instagram":{"hook":"...","concept":"..."}}`;
-
-let apiKey = localStorage.getItem('panax_api_key') || '';
-let allNews = [];
+let keys = { anthropic:'', twitchId:'', twitchSecret:'', youtube:'' };
+let allNewsData = {};
 let activeFilter = 'all';
-let activeChs = new Set();
-let ideas = JSON.parse(localStorage.getItem('panax_ideas') || '[]');
+let twitchToken = '';
 
-function init() {
-  if (!apiKey) {
-    document.getElementById('modal').classList.remove('hidden');
-  } else {
-    updateStatus(true);
-  }
-  renderIdeas();
+function loadKeys() {
+  keys.anthropic    = localStorage.getItem('px_anthropic') || '';
+  keys.twitchId     = localStorage.getItem('px_twitch_id') || '';
+  keys.twitchSecret = localStorage.getItem('px_twitch_secret') || '';
+  keys.youtube      = localStorage.getItem('px_youtube') || '';
+  updateDots();
+  if (!keys.anthropic) openModal();
 }
 
-function saveApiKey() {
-  const val = document.getElementById('api-key-input').value.trim();
-  if (!val) return;
-  apiKey = val;
-  localStorage.setItem('panax_api_key', apiKey);
-  document.getElementById('modal').classList.add('hidden');
-  updateStatus(true);
+function saveKeys() {
+  const a = document.getElementById('key-anthropic').value.trim();
+  const ti = document.getElementById('key-twitch-id').value.trim();
+  const ts = document.getElementById('key-twitch-secret').value.trim();
+  const yt = document.getElementById('key-youtube').value.trim();
+  if (a) { keys.anthropic = a; localStorage.setItem('px_anthropic', a); }
+  if (ti) { keys.twitchId = ti; localStorage.setItem('px_twitch_id', ti); }
+  if (ts) { keys.twitchSecret = ts; localStorage.setItem('px_twitch_secret', ts); }
+  if (yt) { keys.youtube = yt; localStorage.setItem('px_youtube', yt); }
+  updateDots();
+  closeModal();
 }
 
-function openApiModal() {
-  document.getElementById('api-key-input').value = apiKey;
+function updateDots() {
+  document.getElementById('dot-anthropic').className = 'status-dot' + (keys.anthropic ? ' ok' : '');
+  document.getElementById('dot-twitch').className    = 'status-dot' + (keys.twitchId && keys.twitchSecret ? ' ok' : '');
+  document.getElementById('dot-youtube').className   = 'status-dot' + (keys.youtube ? ' ok' : '');
+}
+
+function openModal() {
+  document.getElementById('key-anthropic').value    = keys.anthropic;
+  document.getElementById('key-twitch-id').value    = keys.twitchId;
+  document.getElementById('key-twitch-secret').value = keys.twitchSecret;
+  document.getElementById('key-youtube').value      = keys.youtube;
   document.getElementById('modal').classList.remove('hidden');
 }
+function closeModal() { document.getElementById('modal').classList.add('hidden'); }
 
-function updateStatus(active) {
-  document.getElementById('status-dot').className = 'status-dot' + (active ? ' active' : '');
-  document.getElementById('status-label').textContent = active ? 'API connected' : 'No API key';
-}
-
-async function callClaude(system, userMsg) {
+async function callClaude(system, user, maxTokens) {
+  if (!keys.anthropic) { openModal(); throw new Error('Anthropic API key가 없어요'); }
   const res = await fetch('https://api.anthropic.com/v1/messages', {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json', 'x-api-key': apiKey, 'anthropic-version': '2023-06-01', 'anthropic-dangerous-direct-browser-access': 'true' },
-    body: JSON.stringify({
-      model: 'claude-sonnet-4-6',
-      max_tokens: 1000,
-      system,
-      messages: [{ role: 'user', content: userMsg }]
-    })
+    headers: {
+      'Content-Type': 'application/json',
+      'x-api-key': keys.anthropic,
+      'anthropic-version': '2023-06-01',
+      'anthropic-dangerous-direct-browser-access': 'true'
+    },
+    body: JSON.stringify({ model: 'claude-sonnet-4-6', max_tokens: maxTokens || 2000, system, messages: [{ role:'user', content: user }] })
   });
   const data = await res.json();
   if (data.error) throw new Error(data.error.message);
   return data.content.map(b => b.text || '').join('');
 }
 
-async function fetchNews() {
-  if (!apiKey) { openApiModal(); return; }
-  const btn = document.getElementById('refresh-btn');
-  btn.disabled = true;
-  btn.textContent = '...';
-  document.getElementById('news-list').innerHTML = '<div class="loading-row"><div class="spinner"></div> Fetching news...</div>';
+async function getTwitchToken() {
+  if (twitchToken) return twitchToken;
+  if (!keys.twitchId || !keys.twitchSecret) return null;
+  try {
+    const res = await fetch(`https://id.twitch.tv/oauth2/token?client_id=${keys.twitchId}&client_secret=${keys.twitchSecret}&grant_type=client_credentials`, { method:'POST' });
+    const d = await res.json();
+    twitchToken = d.access_token;
+    return twitchToken;
+  } catch { return null; }
+}
+
+async function loadTop5() {
+  const grid = document.getElementById('top5-grid');
+  grid.innerHTML = '<div class="top5-loading"><span class="spinner"></span> 데이터 수집 중...</div>';
+  let sources = [];
 
   try {
-    const raw = await callClaude(SYSTEM_NEWS, "Generate today's top 6 gaming news items.");
-    const clean = raw.replace(/```json|```/g, '').trim();
-    allNews = JSON.parse(clean).news;
+    const token = await getTwitchToken();
+    if (token) {
+      const r = await fetch('https://api.twitch.tv/helix/games/top?first=10', { headers: { 'Authorization': `Bearer ${token}`, 'Client-Id': keys.twitchId } });
+      const d = await r.json();
+      sources = sources.concat((d.data || []).map(g => ({ name: g.name, source: 'Twitch' })));
+    }
+  } catch {}
+
+  try {
+    if (keys.youtube) {
+      const r = await fetch(`https://www.googleapis.com/youtube/v3/videos?part=snippet&chart=mostPopular&videoCategoryId=20&maxResults=10&key=${keys.youtube}`);
+      const d = await r.json();
+      sources = sources.concat((d.items || []).map(v => ({ name: v.snippet.title.split('|')[0].split('-')[0].trim().substring(0, 40), source: 'YouTube' })));
+    }
+  } catch {}
+
+  try {
+    const raw = await callClaude(
+      'You are a gaming trends analyst. Based on provided data (and your own knowledge of current gaming trends), identify the top 5 most popular games right now. Include console and PC games. Respond ONLY in JSON: {"top5":[{"rank":1,"name":"...","platform":"PS5/Xbox/Switch/PC/Multi","why":"one sentence why trending"},...5 items]}',
+      `Data from APIs: ${JSON.stringify(sources.slice(0,20))}. Today: ${new Date().toDateString()}. Fill gaps with your knowledge of current trends.`,
+      800
+    );
+    const parsed = JSON.parse(raw.replace(/```json|```/g,'').trim());
+    grid.innerHTML = parsed.top5.map((g, i) => `
+      <div class="top5-card fade-up" style="animation-delay:${i*0.06}s">
+        <div class="top5-rank ${i===0?'gold':''}">${g.rank}</div>
+        <div class="top5-name">${g.name}</div>
+        <div class="top5-platform">${g.platform}</div>
+        <div class="top5-why">${g.why}</div>
+      </div>`).join('');
+  } catch(e) {
+    grid.innerHTML = `<div class="top5-loading" style="color:var(--red);">불러오기 실패: ${e.message}</div>`;
+  }
+}
+
+const CATS = [
+  { id:'release',     label:'🎮 릴리즈',   cls:'cat-release' },
+  { id:'community',   label:'💬 커뮤니티', cls:'cat-community' },
+  { id:'controversy', label:'⚠️ 논란',    cls:'cat-controversy' },
+  { id:'sale',        label:'🏷 세일',     cls:'cat-sale' },
+  { id:'other',       label:'📌 기타',     cls:'cat-other' }
+];
+
+const NEWS_SYSTEM = `You are a gaming news curator for PANAX, a cross-platform gamer community app.
+Curate the most impactful, high-attention gaming news from the past {PERIOD} day(s).
+Draw from: IGN, Kotaku, Eurogamer, PC Gamer, TheGamer, Reddit r/gaming, Reddit r/Games, Polygon.
+
+Generate exactly 3 news items per category:
+- release: game launches, upcoming releases, delays, surprise drops, DLC
+- community: most-discussed games and topics in gaming communities right now
+- controversy: controversies around games, studios, publishers, developers (report factually, no bias)
+- sale: game sales, limited-time events, free games, discounts
+- other: other noteworthy gaming news
+
+For each item:
+- title_en: punchy English headline (as a journalist would write)
+- title_kr: direct Korean translation for quick comprehension (직독직해)
+- desc_en: 2-3 sentence original summary - NO direct quotes from articles, paraphrase only
+- desc_kr: direct Korean translation of desc_en (직독직해)
+- source: publication (IGN, Kotaku, Reddit, Eurogamer, etc.)
+- link: best-guess URL to a real article on that domain
+- time: approximate time ago ("2h ago", "1d ago", etc.)
+
+CRITICAL: desc_en must be original writing with NO direct article quotes. Be factual and unbiased.
+
+Respond ONLY as valid JSON:
+{"news":{"release":[3 items],"community":[3 items],"controversy":[3 items],"sale":[3 items],"other":[3 items]}}`;
+
+async function loadNews() {
+  if (!keys.anthropic) { openModal(); return; }
+  const btn = document.getElementById('news-btn');
+  btn.disabled = true; btn.innerHTML = '<span class="spinner"></span> 불러오는 중...';
+  document.getElementById('news-container').innerHTML = '<div class="loading-box"><span class="spinner"></span> 뉴스 수집 중입니다. 잠시만 기다려주세요...</div>';
+  closeContent();
+  const period = document.getElementById('period-select').value;
+  try {
+    const raw = await callClaude(
+      NEWS_SYSTEM.replace('{PERIOD}', period),
+      `Curate top gaming news from the past ${period} day(s). Today is ${new Date().toDateString()}.`,
+      3000
+    );
+    const parsed = JSON.parse(raw.replace(/```json|```/g,'').trim());
+    allNewsData = parsed.news;
     renderNews();
   } catch(e) {
-    document.getElementById('news-list').innerHTML = `<div class="empty-state" style="color:var(--red);">Failed to load news.<br><small>${e.message}</small></div>`;
+    document.getElementById('news-container').innerHTML = `<div class="empty-box"><strong>뉴스 불러오기 실패</strong>${e.message}</div>`;
   }
-  btn.disabled = false;
-  btn.textContent = '↻ Refresh';
+  btn.disabled = false; btn.innerHTML = '↻ 뉴스 불러오기';
 }
 
 function setFilter(cat, el) {
   activeFilter = cat;
-  document.querySelectorAll('.filter-tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.ftab').forEach(t => t.classList.remove('active'));
   el.classList.add('active');
   renderNews();
 }
 
 function renderNews() {
-  const filtered = activeFilter === 'all' ? allNews : allNews.filter(n => n.category === activeFilter);
-  const list = document.getElementById('news-list');
-  if (!filtered.length) { list.innerHTML = '<div class="empty-state">No news in this category</div>'; return; }
-
-  const badgeMap = {
-    release: ['badge-release', 'RELEASE'],
-    trend:   ['badge-trend',   'COMMUNITY'],
-    sale:    ['badge-sale',    'SALE'],
-    esports: ['badge-esports', 'ESPORTS']
-  };
-
-  list.innerHTML = filtered.map((n, i) => {
-    const [bc, bl] = badgeMap[n.category] || ['badge-trend', 'NEWS'];
-    return `<div class="news-card" id="card-${n.id}" style="animation-delay:${i*0.05}s">
-      <div class="card-meta">
-        <span class="badge ${bc}">${bl}</span>
-        <span class="card-source">${n.source}</span>
-        <span class="card-time">${n.time}</span>
+  const container = document.getElementById('news-container');
+  if (!allNewsData || !Object.keys(allNewsData).length) return;
+  const catsToShow = activeFilter === 'all' ? CATS : CATS.filter(c => c.id === activeFilter);
+  let html = '';
+  catsToShow.forEach(cat => {
+    const items = allNewsData[cat.id] || [];
+    if (!items.length) return;
+    html += `<div class="news-category-section fade-up">
+      <div class="cat-header">
+        <span class="cat-label ${cat.cls}">${cat.label}</span>
+        <span class="cat-count">${items.length}개의 소식</span>
       </div>
-      <div class="card-title">${n.title}</div>
-      <div class="card-desc">${n.desc}</div>
-      <div class="card-actions">
-        <button class="btn btn-sm" onclick="prefill(${n.id})">✎ Memo</button>
-        <button class="btn btn-sm btn-primary" onclick="getIdea(${n.id})">✦ AI Idea</button>
-      </div>
+      <div class="news-cards">${items.map((n,i) => newsCardHtml(n, cat.id, i)).join('')}</div>
     </div>`;
-  }).join('');
+  });
+  container.innerHTML = html || '<div class="empty-box"><strong>해당 카테고리 뉴스가 없어요</strong></div>';
 }
 
-function prefill(id) {
-  const n = allNews.find(x => x.id === id);
-  if (!n) return;
-  document.getElementById('memo-text').value = n.title + '\n';
-  document.getElementById('memo-text').focus();
+function newsCardHtml(n, cat, idx) {
+  const id = `${cat}__${idx}`;
+  return `<div class="news-card" id="card-${id}">
+    <div class="news-card-meta">
+      <span class="news-source">${n.source}</span>
+      <span class="news-time">${n.time}</span>
+    </div>
+    <div class="news-title-en">${n.title_en}</div>
+    <div class="news-title-kr">${n.title_kr}</div>
+    <div class="news-desc-en">${n.desc_en}</div>
+    <div class="news-desc-kr">${n.desc_kr}</div>
+    ${n.link ? `<a class="news-link" href="${n.link}" target="_blank" rel="noopener">🔗 원문 보기 ↗</a>` : ''}
+    <div class="news-actions">
+      <button class="btn btn-sm btn-primary" onclick="generateContent('${id}')">📱 컨텐츠 생성</button>
+    </div>
+  </div>`;
 }
 
-async function getIdea(id) {
-  const n = allNews.find(x => x.id === id);
-  if (!n) return;
-  document.querySelectorAll('.news-card').forEach(c => c.classList.remove('selected'));
-  document.getElementById('card-' + id)?.classList.add('selected');
+const CONTENT_SYSTEM = `You create Instagram card news content for PANAX, a cross-platform gamer community app.
+PANAX brand: confident playfulness, warm, inclusive, clever gamer humor. Never offensive, biased, toxic, or sarcastic.
 
-  const out = document.getElementById('ai-output');
-  out.innerHTML = '<div class="loading-row"><div class="spinner"></div> Generating PANAX idea...</div>';
+Two personas present the same news in their own style:
+
+SAMMY 🤖: Small robot character. Nerdy, playful, super energetic. Like a 15-17 year old boy obsessed with games and community culture. Uses casual gamer language naturally. Excited and enthusiastic.
+
+LEDY 🎮: Woman in her early 20s. Also nerdy and playful but warmer and gentler. Loves gaming solo at home. Thoughtful, cozy vibes. More measured but equally passionate.
+
+Also generate 3 community reaction comments:
+1. agree — someone who agrees enthusiastically
+2. disagree — someone who respectfully disagrees
+3. funny — a hilarious random community-style comment (inside gamer humor)
+
+Rules:
+- English only in all output
+- NO direct quotes from news articles (copyright)
+- NEVER offensive, biased, political, or controversial in the final content
+- Each persona: 3-5 sentences, card-news style, conversational
+- Comments: short and punchy, with creative gamer usernames
+
+Respond ONLY as valid JSON:
+{"sammy":"...","ledy":"...","comments":[{"user":"...","type":"agree","text":"..."},{"user":"...","type":"disagree","text":"..."},{"user":"...","type":"funny","text":"..."}]}`;
+
+async function generateContent(cardId) {
+  const parts = cardId.split('__');
+  const cat = parts[0], idx = parseInt(parts[1]);
+  const news = allNewsData[cat]?.[idx];
+  if (!news) return;
+
+  const output = document.getElementById('content-output');
+  const body = document.getElementById('content-body');
+  document.getElementById('content-source').textContent = news.title_en;
+  output.classList.add('visible');
+  body.innerHTML = '<div class="loading-box"><span class="spinner"></span> Sammy와 Ledy가 내용을 준비하고 있어요...</div>';
+  output.scrollIntoView({ behavior:'smooth', block:'start' });
 
   try {
-    const raw = await callClaude(SYSTEM_IDEA, `News: "${n.title}". ${n.desc}`);
-    const clean = raw.replace(/```json|```/g, '').trim();
-    const ideas = JSON.parse(clean);
-    renderAIIdeas(ideas, n);
+    const raw = await callClaude(CONTENT_SYSTEM, `News headline: "${news.title_en}". Context: ${news.desc_en}`, 1500);
+    const parsed = JSON.parse(raw.replace(/```json|```/g,'').trim());
+    const typeMap = { agree:['type-agree','동의 ✓'], disagree:['type-disagree','반대 ✗'], funny:['type-funny','😂'] };
+    const comments = (parsed.comments||[]).map(c => {
+      const [cls,label] = typeMap[c.type]||['',''];
+      return `<div class="comment-item">
+        <div class="comment-avatar">${(c.user||'?')[0].toUpperCase()}</div>
+        <div style="flex:1;">
+          <div class="comment-user">${c.user}<span class="comment-type ${cls}">${label}</span></div>
+          <div class="comment-text">${c.text}</div>
+        </div>
+      </div>`;
+    }).join('');
+
+    body.innerHTML = `
+      <div class="personas-grid">
+        <div class="persona-card persona-sammy">
+          <div class="persona-header">
+            <div class="persona-avatar sammy-av">🤖</div>
+            <div><div class="persona-name">Sammy</div><div class="persona-tag">Energetic gamer bot</div></div>
+            <button class="copy-btn" onclick="copyText('sammy-txt')">Copy</button>
+          </div>
+          <div class="persona-text" id="sammy-txt">${parsed.sammy}</div>
+        </div>
+        <div class="persona-card persona-ledy">
+          <div class="persona-header">
+            <div class="persona-avatar ledy-av">🎮</div>
+            <div><div class="persona-name">Ledy</div><div class="persona-tag">Cozy home gamer</div></div>
+            <button class="copy-btn" onclick="copyText('ledy-txt')">Copy</button>
+          </div>
+          <div class="persona-text" id="ledy-txt">${parsed.ledy}</div>
+        </div>
+      </div>
+      <div class="comments-section">
+        <div class="comments-title">💬 가상 커뮤니티 반응</div>
+        ${comments}
+      </div>`;
   } catch(e) {
-    out.innerHTML = `<div class="ai-empty" style="color:var(--red);">Failed. ${e.message}</div>`;
+    body.innerHTML = `<div class="empty-box"><strong>생성 실패</strong>${e.message}</div>`;
   }
 }
 
-function renderAIIdeas(ideas, news) {
-  const out = document.getElementById('ai-output');
-  const platforms = [
-    { key: 'youtube',   label: 'YouTube Shorts', ch: 'yt' },
-    { key: 'twitter',   label: 'X / Twitter',    ch: 'x'  },
-    { key: 'instagram', label: 'Instagram',       ch: 'ig' }
-  ];
-  out.innerHTML = `<div style="font-size:11px;color:var(--dim);margin-bottom:10px;">Based on: <em style="color:var(--muted);">${news.title}</em></div>` +
-  platforms.map(p => {
-    const item = ideas[p.key];
-    if (!item) return '';
-    return `<div class="ai-idea-item">
-      <div class="ai-platform">${p.label}
-        <button class="btn btn-sm" onclick="saveFromAI('${p.ch}', ${JSON.stringify(item.hook + ' / ' + item.concept)})">+ Save</button>
-      </div>
-      <div class="ai-hook">${item.hook}</div>
-      <div class="ai-concept">${item.concept}</div>
-    </div>`;
-  }).join('');
+function copyText(id) {
+  const t = document.getElementById(id)?.textContent || '';
+  navigator.clipboard.writeText(t).then(()=>{ alert('복사됐어요! ✓'); });
 }
 
-function toggleCh(ch) {
-  const el = document.getElementById('ch-' + ch);
-  if (activeChs.has(ch)) { activeChs.delete(ch); el.className = 'ch-btn'; }
-  else { activeChs.add(ch); el.className = `ch-btn ${ch}-on`; }
-}
+function closeContent() { document.getElementById('content-output').classList.remove('visible'); }
 
-function saveMemo() {
-  const text = document.getElementById('memo-text').value.trim();
-  if (!text) return;
-  ideas.unshift({ id: Date.now(), text, chs: [...activeChs] });
-  document.getElementById('memo-text').value = '';
-  activeChs.clear();
-  ['yt','x','ig'].forEach(ch => { document.getElementById('ch-'+ch).className = 'ch-btn'; });
-  persistIdeas();
-  renderIdeas();
-}
-
-function saveFromAI(ch, text) {
-  ideas.unshift({ id: Date.now(), text, chs: [ch] });
-  persistIdeas();
-  renderIdeas();
-}
-
-function deleteIdea(id) {
-  ideas = ideas.filter(i => i.id !== id);
-  persistIdeas();
-  renderIdeas();
-}
-
-function persistIdeas() {
-  localStorage.setItem('panax_ideas', JSON.stringify(ideas));
-}
-
-function renderIdeas() {
-  const list = document.getElementById('ideas-list');
-  if (!ideas.length) { list.innerHTML = '<div class="empty-state">No ideas saved yet</div>'; return; }
-  const chStyle = {
-    yt: ['rgba(248,113,113,0.12)', 'var(--red)', 'YT'],
-    x:  ['rgba(240,240,245,0.08)', 'var(--text)', 'X'],
-    ig: ['rgba(251,191,36,0.10)',  'var(--amber)', 'IG']
-  };
-  list.innerHTML = ideas.map(idea => {
-    const chips = idea.chs.map(ch => {
-      const [bg, color, label] = chStyle[ch] || ['var(--surface2)', 'var(--muted)', ch];
-      return `<span class="idea-chip" style="background:${bg};color:${color};">${label}</span>`;
-    }).join('');
-    return `<div class="idea-item">
-      <div class="idea-chips">${chips}</div>
-      <div class="idea-text">${idea.text}</div>
-      <button class="idea-del" onclick="deleteIdea(${idea.id})">×</button>
-    </div>`;
-  }).join('');
-}
-
-init();
+loadKeys();
 </script>
 </body>
 </html>
