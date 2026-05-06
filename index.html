@@ -1,0 +1,810 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PANAX — Content Board</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0a0a0f;
+    --surface: #111118;
+    --surface2: #18181f;
+    --border: rgba(255,255,255,0.07);
+    --border2: rgba(255,255,255,0.12);
+    --text: #f0f0f5;
+    --muted: #7a7a8a;
+    --dim: #3a3a4a;
+    --accent: #7c6cff;
+    --accent2: #a594ff;
+    --green: #4ade80;
+    --amber: #fbbf24;
+    --red: #f87171;
+    --blue: #60a5fa;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* Subtle grid background */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image:
+      linear-gradient(rgba(124,108,255,0.03) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(124,108,255,0.03) 1px, transparent 1px);
+    background-size: 40px 40px;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  /* ── HEADER ── */
+  header {
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    background: rgba(10,10,15,0.85);
+    backdrop-filter: blur(16px);
+    border-bottom: 1px solid var(--border);
+    padding: 0 2rem;
+    height: 56px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .logo {
+    font-family: 'Syne', sans-serif;
+    font-weight: 800;
+    font-size: 18px;
+    letter-spacing: 0.12em;
+    color: var(--text);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .logo-dot {
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    background: var(--accent);
+    box-shadow: 0 0 8px var(--accent);
+    animation: pulse 2s ease-in-out infinite;
+  }
+
+  @keyframes pulse {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.6; transform: scale(0.8); }
+  }
+
+  .header-right { display: flex; align-items: center; gap: 10px; }
+
+  .api-status {
+    font-size: 12px;
+    color: var(--muted);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .status-dot {
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    background: var(--dim);
+  }
+
+  .status-dot.active { background: var(--green); box-shadow: 0 0 6px var(--green); }
+
+  .btn {
+    font-family: 'DM Sans', sans-serif;
+    font-size: 13px;
+    font-weight: 500;
+    padding: 7px 14px;
+    border-radius: 8px;
+    border: 1px solid var(--border2);
+    background: var(--surface2);
+    color: var(--text);
+    cursor: pointer;
+    transition: all 0.15s;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .btn:hover { background: var(--surface); border-color: rgba(255,255,255,0.2); }
+  .btn:active { transform: scale(0.97); }
+
+  .btn-primary {
+    background: var(--accent);
+    border-color: var(--accent);
+    color: #fff;
+  }
+
+  .btn-primary:hover { background: var(--accent2); border-color: var(--accent2); }
+
+  .btn-sm { font-size: 12px; padding: 5px 10px; border-radius: 6px; }
+
+  /* ── MAIN LAYOUT ── */
+  .app {
+    position: relative;
+    z-index: 1;
+    display: grid;
+    grid-template-columns: 1fr 320px;
+    gap: 0;
+    height: calc(100vh - 56px);
+  }
+
+  /* ── LEFT: NEWS PANEL ── */
+  .news-panel {
+    border-right: 1px solid var(--border);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+
+  .panel-toolbar {
+    padding: 16px 20px 12px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-shrink: 0;
+  }
+
+  .panel-label {
+    font-family: 'Syne', sans-serif;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    color: var(--muted);
+    text-transform: uppercase;
+  }
+
+  .filter-tabs {
+    display: flex;
+    gap: 4px;
+    padding: 10px 20px;
+    border-bottom: 1px solid var(--border);
+    flex-shrink: 0;
+    overflow-x: auto;
+  }
+
+  .filter-tab {
+    font-size: 12px;
+    padding: 4px 12px;
+    border-radius: 20px;
+    border: 1px solid var(--border);
+    background: transparent;
+    color: var(--muted);
+    cursor: pointer;
+    white-space: nowrap;
+    transition: all 0.15s;
+    font-family: 'DM Sans', sans-serif;
+  }
+
+  .filter-tab:hover { color: var(--text); border-color: var(--border2); }
+  .filter-tab.active { background: var(--accent); border-color: var(--accent); color: #fff; }
+
+  .news-scroll {
+    flex: 1;
+    overflow-y: auto;
+    padding: 12px;
+  }
+
+  .news-scroll::-webkit-scrollbar { width: 4px; }
+  .news-scroll::-webkit-scrollbar-track { background: transparent; }
+  .news-scroll::-webkit-scrollbar-thumb { background: var(--dim); border-radius: 2px; }
+
+  .news-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 14px;
+    margin-bottom: 8px;
+    cursor: pointer;
+    transition: all 0.15s;
+    animation: fadeUp 0.3s ease both;
+  }
+
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(8px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .news-card:hover { border-color: var(--border2); background: var(--surface2); }
+  .news-card.selected { border-color: var(--accent); }
+
+  .card-meta {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 8px;
+  }
+
+  .badge {
+    font-size: 10px;
+    font-weight: 500;
+    padding: 2px 8px;
+    border-radius: 10px;
+    font-family: 'Syne', sans-serif;
+    letter-spacing: 0.05em;
+  }
+
+  .badge-release { background: rgba(96,165,250,0.12); color: var(--blue); border: 1px solid rgba(96,165,250,0.2); }
+  .badge-trend   { background: rgba(124,108,255,0.12); color: var(--accent2); border: 1px solid rgba(124,108,255,0.2); }
+  .badge-sale    { background: rgba(74,222,128,0.10); color: var(--green); border: 1px solid rgba(74,222,128,0.2); }
+  .badge-esports { background: rgba(251,191,36,0.10); color: var(--amber); border: 1px solid rgba(251,191,36,0.2); }
+
+  .card-source { font-size: 11px; color: var(--muted); }
+  .card-time   { font-size: 11px; color: var(--dim); margin-left: auto; }
+
+  .card-title { font-size: 14px; font-weight: 500; line-height: 1.45; margin-bottom: 5px; }
+  .card-desc  { font-size: 12px; color: var(--muted); line-height: 1.55; }
+
+  .card-actions {
+    display: flex;
+    gap: 6px;
+    margin-top: 10px;
+  }
+
+  /* ── RIGHT: SIDE PANEL ── */
+  .side-panel {
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+
+  .side-section {
+    border-bottom: 1px solid var(--border);
+    padding: 16px;
+    flex-shrink: 0;
+  }
+
+  .side-section-title {
+    font-family: 'Syne', sans-serif;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    color: var(--muted);
+    text-transform: uppercase;
+    margin-bottom: 12px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  /* AI Output */
+  .ai-box {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 12px;
+    min-height: 100px;
+  }
+
+  .ai-empty {
+    font-size: 12px;
+    color: var(--dim);
+    text-align: center;
+    padding: 20px 0;
+    line-height: 1.6;
+  }
+
+  .ai-idea-item {
+    margin-bottom: 12px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .ai-idea-item:last-child { margin-bottom: 0; padding-bottom: 0; border-bottom: none; }
+
+  .ai-platform {
+    font-size: 11px;
+    font-weight: 500;
+    color: var(--accent2);
+    margin-bottom: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .ai-hook { font-size: 13px; font-weight: 500; margin-bottom: 3px; }
+  .ai-concept { font-size: 12px; color: var(--muted); line-height: 1.5; }
+
+  /* Memo */
+  .memo-textarea {
+    width: 100%;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 10px;
+    color: var(--text);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 13px;
+    resize: none;
+    min-height: 80px;
+    line-height: 1.5;
+    transition: border-color 0.15s;
+  }
+
+  .memo-textarea:focus { outline: none; border-color: var(--accent); }
+  .memo-textarea::placeholder { color: var(--dim); }
+
+  .channel-row {
+    display: flex;
+    gap: 6px;
+    margin: 8px 0;
+  }
+
+  .ch-btn {
+    font-size: 11px;
+    padding: 4px 10px;
+    border-radius: 20px;
+    border: 1px solid var(--border);
+    background: transparent;
+    color: var(--muted);
+    cursor: pointer;
+    font-family: 'DM Sans', sans-serif;
+    transition: all 0.15s;
+  }
+
+  .ch-btn:hover { border-color: var(--border2); color: var(--text); }
+  .ch-btn.yt-on  { background: rgba(248,113,113,0.12); border-color: rgba(248,113,113,0.3); color: var(--red); }
+  .ch-btn.x-on   { background: rgba(240,240,245,0.08); border-color: rgba(240,240,245,0.2); color: var(--text); }
+  .ch-btn.ig-on  { background: rgba(251,191,36,0.10); border-color: rgba(251,191,36,0.25); color: var(--amber); }
+
+  /* Saved ideas */
+  .ideas-scroll {
+    flex: 1;
+    overflow-y: auto;
+    padding: 12px;
+  }
+
+  .ideas-scroll::-webkit-scrollbar { width: 4px; }
+  .ideas-scroll::-webkit-scrollbar-thumb { background: var(--dim); border-radius: 2px; }
+
+  .idea-item {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 10px 12px;
+    margin-bottom: 6px;
+    position: relative;
+    animation: fadeUp 0.2s ease both;
+  }
+
+  .idea-chips {
+    display: flex;
+    gap: 4px;
+    margin-bottom: 5px;
+    flex-wrap: wrap;
+  }
+
+  .idea-chip {
+    font-size: 10px;
+    padding: 2px 7px;
+    border-radius: 10px;
+  }
+
+  .idea-text { font-size: 12px; line-height: 1.5; color: var(--text); padding-right: 20px; }
+
+  .idea-del {
+    position: absolute;
+    top: 8px; right: 8px;
+    background: none;
+    border: none;
+    color: var(--dim);
+    cursor: pointer;
+    font-size: 14px;
+    line-height: 1;
+    transition: color 0.15s;
+  }
+
+  .idea-del:hover { color: var(--muted); }
+
+  .empty-state {
+    font-size: 12px;
+    color: var(--dim);
+    text-align: center;
+    padding: 24px 0;
+    line-height: 1.7;
+  }
+
+  /* ── API KEY MODAL ── */
+  .modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.7);
+    backdrop-filter: blur(8px);
+    z-index: 200;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .modal-overlay.hidden { display: none; }
+
+  .modal {
+    background: var(--surface);
+    border: 1px solid var(--border2);
+    border-radius: 16px;
+    padding: 28px;
+    width: 420px;
+    max-width: 90vw;
+  }
+
+  .modal-title {
+    font-family: 'Syne', sans-serif;
+    font-size: 18px;
+    font-weight: 700;
+    margin-bottom: 8px;
+  }
+
+  .modal-desc {
+    font-size: 13px;
+    color: var(--muted);
+    line-height: 1.6;
+    margin-bottom: 20px;
+  }
+
+  .modal-input {
+    width: 100%;
+    background: var(--bg);
+    border: 1px solid var(--border2);
+    border-radius: 8px;
+    padding: 10px 14px;
+    color: var(--text);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 13px;
+    margin-bottom: 12px;
+    transition: border-color 0.15s;
+  }
+
+  .modal-input:focus { outline: none; border-color: var(--accent); }
+
+  .modal-note {
+    font-size: 11px;
+    color: var(--dim);
+    margin-bottom: 16px;
+    line-height: 1.6;
+  }
+
+  /* Loading */
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .spinner {
+    width: 16px; height: 16px;
+    border: 2px solid var(--dim);
+    border-top-color: var(--accent2);
+    border-radius: 50%;
+    animation: spin 0.6s linear infinite;
+    display: inline-block;
+  }
+
+  .loading-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 13px;
+    color: var(--muted);
+    padding: 20px;
+    justify-content: center;
+  }
+
+  /* Scrollbar global */
+  ::-webkit-scrollbar { width: 4px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: var(--dim); border-radius: 2px; }
+</style>
+</head>
+<body>
+
+<!-- API Key Modal -->
+<div class="modal-overlay" id="modal">
+  <div class="modal">
+    <div class="modal-title">Welcome to PANAX Board</div>
+    <div class="modal-desc">Enter your Anthropic API key to enable AI-powered news curation and content idea generation.</div>
+    <input class="modal-input" type="password" id="api-key-input" placeholder="sk-ant-..." />
+    <div class="modal-note">🔒 Your key is stored only in your browser's local storage and never sent anywhere except Anthropic's API.</div>
+    <div style="display:flex; gap:8px;">
+      <button class="btn btn-primary" style="flex:1;" onclick="saveApiKey()">Save & Start</button>
+      <button class="btn" onclick="document.getElementById('modal').classList.add('hidden')">Skip</button>
+    </div>
+  </div>
+</div>
+
+<!-- Header -->
+<header>
+  <div class="logo">
+    <div class="logo-dot"></div>
+    PANAX BOARD
+  </div>
+  <div class="header-right">
+    <div class="api-status">
+      <div class="status-dot" id="status-dot"></div>
+      <span id="status-label">No API key</span>
+    </div>
+    <button class="btn btn-sm" onclick="openApiModal()">⚙ API Key</button>
+  </div>
+</header>
+
+<!-- Main App -->
+<div class="app">
+
+  <!-- LEFT: News Feed -->
+  <div class="news-panel">
+    <div class="panel-toolbar">
+      <div class="panel-label">Today's Gaming News</div>
+      <button class="btn btn-sm btn-primary" id="refresh-btn" onclick="fetchNews()">↻ Refresh</button>
+    </div>
+    <div class="filter-tabs">
+      <button class="filter-tab active" onclick="setFilter('all', this)">All</button>
+      <button class="filter-tab" onclick="setFilter('release', this)">🎮 Releases</button>
+      <button class="filter-tab" onclick="setFilter('trend', this)">🔥 Community</button>
+      <button class="filter-tab" onclick="setFilter('sale', this)">🏷 Sales & Events</button>
+      <button class="filter-tab" onclick="setFilter('esports', this)">🏆 Esports</button>
+    </div>
+    <div class="news-scroll" id="news-list">
+      <div class="empty-state" style="padding-top:40px;">
+        Hit <strong style="color:var(--accent2);">Refresh</strong> to load today's gaming news.<br><br>
+        Make sure your API key is set first.
+      </div>
+    </div>
+  </div>
+
+  <!-- RIGHT: Side Panel -->
+  <div class="side-panel">
+
+    <!-- AI Idea Output -->
+    <div class="side-section" style="flex-shrink:0;">
+      <div class="side-section-title">✦ AI Content Idea</div>
+      <div class="ai-box" id="ai-output">
+        <div class="ai-empty">Click <strong style="color:var(--accent2);">AI Idea</strong> on any news card<br>to generate PANAX content ideas</div>
+      </div>
+    </div>
+
+    <!-- Memo -->
+    <div class="side-section" style="flex-shrink:0;">
+      <div class="side-section-title">✎ Quick Memo</div>
+      <textarea class="memo-textarea" id="memo-text" placeholder="Drop your idea here..."></textarea>
+      <div class="channel-row">
+        <button class="ch-btn" id="ch-yt" onclick="toggleCh('yt')">YouTube</button>
+        <button class="ch-btn" id="ch-x"  onclick="toggleCh('x')">X</button>
+        <button class="ch-btn" id="ch-ig" onclick="toggleCh('ig')">Instagram</button>
+        <button class="btn btn-sm btn-primary" style="margin-left:auto;" onclick="saveMemo()">Save</button>
+      </div>
+    </div>
+
+    <!-- Saved Ideas -->
+    <div class="side-section-title" style="padding: 14px 16px 0; flex-shrink:0;">☰ Saved Ideas</div>
+    <div class="ideas-scroll" id="ideas-list">
+      <div class="empty-state">No ideas saved yet</div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+const SYSTEM_NEWS = `You are a gaming news curator for PANAX, a cross-platform gamer community app. Generate exactly 6 relevant gaming news items from today. Mix these categories: game releases/updates (release), community trends from Reddit/X (trend), sales and events (sale), esports news (esports). Use real game titles and real platforms (PlayStation, Xbox, Switch, PC). Make titles punchy and engaging. Respond ONLY in this exact JSON, no extra text: {"news":[{"id":1,"title":"...","desc":"one or two sentence summary","category":"release","source":"IGN","time":"2h ago"},{"id":2,"title":"...","desc":"...","category":"trend","source":"Reddit","time":"4h ago"},{"id":3,"title":"...","desc":"...","category":"sale","source":"Steam","time":"1h ago"},{"id":4,"title":"...","desc":"...","category":"esports","source":"ESL","time":"3h ago"},{"id":5,"title":"...","desc":"...","category":"release","source":"Kotaku","time":"5h ago"},{"id":6,"title":"...","desc":"...","category":"trend","source":"X","time":"6h ago"}]}`;
+
+const SYSTEM_IDEA = `You are a content strategist for PANAX — a gamer-built social platform that breaks platform barriers between PlayStation, Xbox, Switch, and PC communities. Brand voice: confident playfulness. Fun but not childish. Warm, inclusive, clever insider humor, never sarcastic or toxic. Core features: game ratings/reviews, play history, wishlists, game discovery, connecting players. Target: English-speaking global gamers. Given a news item, generate 3 content ideas — one each for YouTube Shorts, X/Twitter, and Instagram — that fit PANAX's community-first brand. Respond ONLY in this JSON, no extra text: {"youtube":{"hook":"...","concept":"..."},"twitter":{"hook":"...","concept":"..."},"instagram":{"hook":"...","concept":"..."}}`;
+
+let apiKey = localStorage.getItem('panax_api_key') || '';
+let allNews = [];
+let activeFilter = 'all';
+let activeChs = new Set();
+let ideas = JSON.parse(localStorage.getItem('panax_ideas') || '[]');
+
+function init() {
+  if (!apiKey) {
+    document.getElementById('modal').classList.remove('hidden');
+  } else {
+    updateStatus(true);
+  }
+  renderIdeas();
+}
+
+function saveApiKey() {
+  const val = document.getElementById('api-key-input').value.trim();
+  if (!val) return;
+  apiKey = val;
+  localStorage.setItem('panax_api_key', apiKey);
+  document.getElementById('modal').classList.add('hidden');
+  updateStatus(true);
+}
+
+function openApiModal() {
+  document.getElementById('api-key-input').value = apiKey;
+  document.getElementById('modal').classList.remove('hidden');
+}
+
+function updateStatus(active) {
+  document.getElementById('status-dot').className = 'status-dot' + (active ? ' active' : '');
+  document.getElementById('status-label').textContent = active ? 'API connected' : 'No API key';
+}
+
+async function callClaude(system, userMsg) {
+  const res = await fetch('https://api.anthropic.com/v1/messages', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', 'x-api-key': apiKey, 'anthropic-version': '2023-06-01' },
+    body: JSON.stringify({
+      model: 'claude-sonnet-4-20250514',
+      max_tokens: 1000,
+      system,
+      messages: [{ role: 'user', content: userMsg }]
+    })
+  });
+  const data = await res.json();
+  if (data.error) throw new Error(data.error.message);
+  return data.content.map(b => b.text || '').join('');
+}
+
+async function fetchNews() {
+  if (!apiKey) { openApiModal(); return; }
+  const btn = document.getElementById('refresh-btn');
+  btn.disabled = true;
+  btn.textContent = '...';
+  document.getElementById('news-list').innerHTML = '<div class="loading-row"><div class="spinner"></div> Fetching news...</div>';
+
+  try {
+    const raw = await callClaude(SYSTEM_NEWS, "Generate today's top 6 gaming news items.");
+    const clean = raw.replace(/```json|```/g, '').trim();
+    allNews = JSON.parse(clean).news;
+    renderNews();
+  } catch(e) {
+    document.getElementById('news-list').innerHTML = `<div class="empty-state" style="color:var(--red);">Failed to load news.<br><small>${e.message}</small></div>`;
+  }
+  btn.disabled = false;
+  btn.textContent = '↻ Refresh';
+}
+
+function setFilter(cat, el) {
+  activeFilter = cat;
+  document.querySelectorAll('.filter-tab').forEach(t => t.classList.remove('active'));
+  el.classList.add('active');
+  renderNews();
+}
+
+function renderNews() {
+  const filtered = activeFilter === 'all' ? allNews : allNews.filter(n => n.category === activeFilter);
+  const list = document.getElementById('news-list');
+  if (!filtered.length) { list.innerHTML = '<div class="empty-state">No news in this category</div>'; return; }
+
+  const badgeMap = {
+    release: ['badge-release', 'RELEASE'],
+    trend:   ['badge-trend',   'COMMUNITY'],
+    sale:    ['badge-sale',    'SALE'],
+    esports: ['badge-esports', 'ESPORTS']
+  };
+
+  list.innerHTML = filtered.map((n, i) => {
+    const [bc, bl] = badgeMap[n.category] || ['badge-trend', 'NEWS'];
+    return `<div class="news-card" id="card-${n.id}" style="animation-delay:${i*0.05}s">
+      <div class="card-meta">
+        <span class="badge ${bc}">${bl}</span>
+        <span class="card-source">${n.source}</span>
+        <span class="card-time">${n.time}</span>
+      </div>
+      <div class="card-title">${n.title}</div>
+      <div class="card-desc">${n.desc}</div>
+      <div class="card-actions">
+        <button class="btn btn-sm" onclick="prefill(${n.id})">✎ Memo</button>
+        <button class="btn btn-sm btn-primary" onclick="getIdea(${n.id})">✦ AI Idea</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function prefill(id) {
+  const n = allNews.find(x => x.id === id);
+  if (!n) return;
+  document.getElementById('memo-text').value = n.title + '\n';
+  document.getElementById('memo-text').focus();
+}
+
+async function getIdea(id) {
+  const n = allNews.find(x => x.id === id);
+  if (!n) return;
+  document.querySelectorAll('.news-card').forEach(c => c.classList.remove('selected'));
+  document.getElementById('card-' + id)?.classList.add('selected');
+
+  const out = document.getElementById('ai-output');
+  out.innerHTML = '<div class="loading-row"><div class="spinner"></div> Generating PANAX idea...</div>';
+
+  try {
+    const raw = await callClaude(SYSTEM_IDEA, `News: "${n.title}". ${n.desc}`);
+    const clean = raw.replace(/```json|```/g, '').trim();
+    const ideas = JSON.parse(clean);
+    renderAIIdeas(ideas, n);
+  } catch(e) {
+    out.innerHTML = `<div class="ai-empty" style="color:var(--red);">Failed. ${e.message}</div>`;
+  }
+}
+
+function renderAIIdeas(ideas, news) {
+  const out = document.getElementById('ai-output');
+  const platforms = [
+    { key: 'youtube',   label: 'YouTube Shorts', ch: 'yt' },
+    { key: 'twitter',   label: 'X / Twitter',    ch: 'x'  },
+    { key: 'instagram', label: 'Instagram',       ch: 'ig' }
+  ];
+  out.innerHTML = `<div style="font-size:11px;color:var(--dim);margin-bottom:10px;">Based on: <em style="color:var(--muted);">${news.title}</em></div>` +
+  platforms.map(p => {
+    const item = ideas[p.key];
+    if (!item) return '';
+    return `<div class="ai-idea-item">
+      <div class="ai-platform">${p.label}
+        <button class="btn btn-sm" onclick="saveFromAI('${p.ch}', ${JSON.stringify(item.hook + ' / ' + item.concept)})">+ Save</button>
+      </div>
+      <div class="ai-hook">${item.hook}</div>
+      <div class="ai-concept">${item.concept}</div>
+    </div>`;
+  }).join('');
+}
+
+function toggleCh(ch) {
+  const el = document.getElementById('ch-' + ch);
+  if (activeChs.has(ch)) { activeChs.delete(ch); el.className = 'ch-btn'; }
+  else { activeChs.add(ch); el.className = `ch-btn ${ch}-on`; }
+}
+
+function saveMemo() {
+  const text = document.getElementById('memo-text').value.trim();
+  if (!text) return;
+  ideas.unshift({ id: Date.now(), text, chs: [...activeChs] });
+  document.getElementById('memo-text').value = '';
+  activeChs.clear();
+  ['yt','x','ig'].forEach(ch => { document.getElementById('ch-'+ch).className = 'ch-btn'; });
+  persistIdeas();
+  renderIdeas();
+}
+
+function saveFromAI(ch, text) {
+  ideas.unshift({ id: Date.now(), text, chs: [ch] });
+  persistIdeas();
+  renderIdeas();
+}
+
+function deleteIdea(id) {
+  ideas = ideas.filter(i => i.id !== id);
+  persistIdeas();
+  renderIdeas();
+}
+
+function persistIdeas() {
+  localStorage.setItem('panax_ideas', JSON.stringify(ideas));
+}
+
+function renderIdeas() {
+  const list = document.getElementById('ideas-list');
+  if (!ideas.length) { list.innerHTML = '<div class="empty-state">No ideas saved yet</div>'; return; }
+  const chStyle = {
+    yt: ['rgba(248,113,113,0.12)', 'var(--red)', 'YT'],
+    x:  ['rgba(240,240,245,0.08)', 'var(--text)', 'X'],
+    ig: ['rgba(251,191,36,0.10)',  'var(--amber)', 'IG']
+  };
+  list.innerHTML = ideas.map(idea => {
+    const chips = idea.chs.map(ch => {
+      const [bg, color, label] = chStyle[ch] || ['var(--surface2)', 'var(--muted)', ch];
+      return `<span class="idea-chip" style="background:${bg};color:${color};">${label}</span>`;
+    }).join('');
+    return `<div class="idea-item">
+      <div class="idea-chips">${chips}</div>
+      <div class="idea-text">${idea.text}</div>
+      <button class="idea-del" onclick="deleteIdea(${idea.id})">×</button>
+    </div>`;
+  }).join('');
+}
+
+init();
+</script>
+</body>
+</html>
