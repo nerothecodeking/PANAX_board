@@ -346,10 +346,20 @@ async function loadTop5() {
   } catch {}
 
   try {
+    const top5System = `You are a gaming trends analyst focused on single-player and small-group console/PC games.
+Identify TOP 5 games generating the most buzz RIGHT NOW. Apply strict filters:
+
+EXCLUDE: Live service games (Fortnite, Apex, Valorant, Overwatch, Warzone, PUBG, etc.), evergreen titles with no recent news (GTA5, Minecraft, Roblox unless major update), mobile games, sports sims (FIFA, NBA 2K).
+
+INCLUDE: Recently released single-player or co-op games (last 1-3 months preferred), games currently buzzing on Reddit r/Games, gaming YouTube, story-driven RPGs, action-adventure, platformers, indie breakouts.
+
+For each explain WHY it is trending specifically right now.
+Respond ONLY in JSON: {"top5":[{"rank":1,"name":"Game Name","platform":"PS5/Xbox/Switch/PC/Multi","released":"Month Year","why":"one sentence why hot right now"},...5 items]}`;
+
     const raw = await callClaude(
-      'You are a gaming trends analyst. Based on provided data (and your own knowledge of current gaming trends), identify the top 5 most popular games right now. Include console and PC games. Respond ONLY in JSON: {"top5":[{"rank":1,"name":"...","platform":"PS5/Xbox/Switch/PC/Multi","why":"one sentence why trending"},...5 items]}',
-      `Data from APIs: ${JSON.stringify(sources.slice(0,20))}. Today: ${new Date().toDateString()}. Fill gaps with your knowledge of current trends.`,
-      800
+      top5System,
+      `Context data (filter with your rules): ${JSON.stringify(sources.slice(0,15))}. Today: ${new Date().toDateString()}.`,
+      1000
     );
     const parsed = JSON.parse(raw.replace(/```json|```/g,'').trim());
     grid.innerHTML = parsed.top5.map((g, i) => `
@@ -357,6 +367,7 @@ async function loadTop5() {
         <div class="top5-rank ${i===0?'gold':''}">${g.rank}</div>
         <div class="top5-name">${g.name}</div>
         <div class="top5-platform">${g.platform}</div>
+        <div style="font-size:11px;color:var(--dim);margin-bottom:4px;">${g.released}</div>
         <div class="top5-why">${g.why}</div>
       </div>`).join('');
   } catch(e) {
@@ -408,7 +419,7 @@ async function loadNews() {
     const raw = await callClaude(
       NEWS_SYSTEM.replace('{PERIOD}', period),
       `Curate top gaming news from the past ${period} day(s). Today is ${new Date().toDateString()}.`,
-      3000
+      4500
     );
     const parsed = JSON.parse(raw.replace(/```json|```/g,'').trim());
     allNewsData = parsed.news;
