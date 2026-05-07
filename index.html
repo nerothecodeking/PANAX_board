@@ -142,6 +142,37 @@ header{background:var(--surface);border-bottom:2px solid var(--border);padding:0
 .tagline-en{font-size:13px;font-weight:700;color:var(--accent);line-height:1.4;}
 .tagline-kr{font-size:12px;color:var(--muted);margin-top:3px;line-height:1.4;}
 
+/* HEADLINE SELECTOR */
+.headlines-section{margin-bottom:20px;}
+.headlines-label{font-family:'Syne',sans-serif;font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-bottom:10px;}
+.headlines-grid{display:flex;flex-direction:column;gap:8px;}
+.headline-card{border:2px solid var(--border);border-radius:10px;padding:12px 16px;cursor:pointer;transition:all .15s;background:var(--surface2);}
+.headline-card:hover{border-color:var(--accent);background:var(--accent-light);}
+.headline-card.selected{border-color:var(--accent);background:var(--accent-light);}
+.headline-card.selected .hcard-en{color:var(--accent);}
+.hcard-en{font-size:16px;font-weight:700;line-height:1.3;margin-bottom:3px;transition:color .15s;}
+.hcard-kr{font-size:13px;color:var(--muted);line-height:1.3;}
+
+/* PERSONA SELECTOR */
+.personas-label{font-family:'Syne',sans-serif;font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-bottom:10px;}
+.pcard.selectable{cursor:pointer;transition:all .15s;}
+.pcard.selectable:hover{transform:translateY(-1px);box-shadow:0 4px 12px rgba(0,0,0,.08);}
+.pcard.persona-selected{box-shadow:0 0 0 3px var(--accent);}
+
+/* COPY SECTION */
+.copy-section{border-top:2px solid var(--border);padding-top:16px;margin-top:4px;display:flex;align-items:center;justify-content:space-between;gap:12px;}
+.copy-hint{font-size:12px;color:var(--dim);}
+.btn-copy-main{font-size:14px;font-weight:700;padding:10px 24px;border-radius:8px;border:2px solid var(--accent);background:var(--accent);color:#fff;cursor:pointer;transition:all .15s;display:inline-flex;align-items:center;gap:8px;}
+.btn-copy-main:hover:not(:disabled){background:#1a3de0;border-color:#1a3de0;}
+.btn-copy-main:disabled{opacity:.4;cursor:not-allowed;pointer-events:none;}
+.btn-copy-main.copied{background:var(--green);border-color:var(--green);}
+
+/* COMMENTS COPY */
+.comments-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;}
+.btn-copy-comments{font-size:12px;font-weight:600;padding:5px 12px;border-radius:6px;border:1px solid var(--border2);background:var(--surface);color:var(--muted);cursor:pointer;transition:all .15s;}
+.btn-copy-comments:hover{background:var(--surface2);color:var(--text);}
+.btn-copy-comments.copied{background:var(--green-bg);border-color:var(--green);color:var(--green);}
+
 /* COMMENTS */
 .comments-sec{border-top:2px solid var(--border);padding-top:18px;}
 .comments-title{font-family:'Syne',sans-serif;font-size:12px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin-bottom:14px;}
@@ -786,25 +817,22 @@ PANAX brand: confident, warm, inclusive. Informative first, entertaining second.
 
 WRITING STYLE — non-negotiable:
 - Short, punchy sentences. One idea per sentence. No run-ons.
-- No slang, no internet abbreviations, no exclamation overload.
+- No excessive exclamation overload.
 - No emotional, dramatic, or literary openers. Never start with feelings or metaphors.
 - Technical terms must be explained in plain language immediately.
 - Tone: IGN or The Verge Instagram — informed, direct, accessible.
 
-THE HEADLINE is the single most important element.
-- Maximum 5 words. Hard limit. No exceptions.
-- Must be specific to this story. No generic phrases like "This Changes Everything."
-- Sammy and Ledy can share the same headline if it fits both angles.
-- Bad: "GTA 6 Fan Uses Astrology to Predict the Release Date of Trailer 3"
-- Good: "Fans Chart Stars for GTA 6"
+HEADLINES — generate 3 options:
+- Short and impactful. No word limit, but shorter is better.
+- Each must be distinct — different angle, different emphasis.
+- Must be specific to this story. No generic phrases.
+- Grab attention immediately with the most interesting angle.
 
-THE HOOK (first sentence) is the second most important element.
+THE HOOK (first sentence) is the most important element of each persona's text.
 - Open with the single most surprising or consequential fact. One sentence only.
 - Never a setup, scene-setter, or observation. Jump straight to the fact.
-- Bad: "There's something interesting about how fans respond to long waits."
-- Good: "A Reddit user spent three months mapping planetary positions to predict a GTA 6 trailer date."
 
-TWO PERSONAS — different PERSPECTIVES on the same news:
+TWO PERSONAS — different PERSPECTIVES, NO separate headlines:
 
 SAMMY 🤖 — Community Angle:
 What does this mean for players and the fanbase? Why do people care? Sharp and direct.
@@ -812,43 +840,46 @@ What does this mean for players and the fanbase? Why do people care? Sharp and d
 LEDY 🎮 — Industry Angle:
 What does this mean for the game, studio, or industry? The bigger picture. Calm and precise.
 
-STRUCTURE for each persona:
-- headline: Max 5 words. Hard limit. Specific. Grabs attention immediately.
-- hook: ONE sentence only. The most compelling fact, stated immediately. No warmup.
-- detail: ONE sentence only. The single most important supporting fact. Keep it tight.
-- tagline: ONE very short closing line, max 10 words. A punchy takeaway — not a summary, not a prediction. Like a subheading that makes you nod.
+STRUCTURE for each persona (no headline — shared headlines above):
+- hook: ONE sentence only. Most compelling fact, stated immediately.
+- detail: ONE sentence only. Key supporting fact. Keep it tight.
+- tagline: ONE very short punchy closing line, max 10 words. A takeaway, not a summary.
 
 CATEGORY FOCUS:
-- RELEASE: hook = what makes it notable right now. detail = platform/date/key feature. tagline = what to watch next.
-- COMMUNITY: hook = the specific action or moment that sparked it. detail = what happened. tagline = why it resonates.
-- CONTROVERSY: hook = the core dispute in one fact. detail = both sides factually. tagline = neutral, no judgment.
-- SALE: hook = the deal itself. detail = conditions/timing/platforms. tagline = who should care.
+- RELEASE: hook = what makes it notable right now. detail = platform/date/key feature. tagline = what to watch.
+- COMMUNITY: hook = the specific action that sparked it. detail = what happened. tagline = why it resonates.
+- CONTROVERSY: hook = the core dispute. detail = both sides factually. tagline = neutral, no judgment.
+- SALE: hook = the deal. detail = conditions/timing/platforms. tagline = who should care.
 - OTHER: hook = most newsworthy fact. detail = key context. tagline = the bottom line.
 
-COMMENTS — 3 short reactions:
-1. type "agree": ONE sentence, max 12 words. Clear support with a specific reason.
-2. type "disagree": ONE sentence, max 12 words. Respectful pushback with one specific point.
-3. type "funny": ONE short dry witty line. Clever observation. Not a joke setup.
+COMMENTS — 3 reactions that feel like real community members:
+- Casual, natural tone. Can include mild common gaming slang (ngl, lol, tbh, fr) or relevant emojis, but only when it genuinely fits — not forced.
+- Keep it short and punchy. One or two sentences max.
+1. type "agree": supports with a clear reason. Can be enthusiastic.
+2. type "disagree": respectful pushback with one specific point.
+3. type "funny": dry witty one-liner. Clever observation.
 
-OUTPUT FORMAT — English AND Korean together.
-Korean must sound like it was originally written in Korean. Natural, not translated.
+OUTPUT FORMAT — English AND Korean together. Korean must sound naturally written in Korean, not translated.
 
 RULES:
 - Never quote the article directly (copyright)
-- No slang, no abbreviations, no all-caps
+- No all-caps for emphasis
 - Creative but believable gamer usernames
 
 Respond ONLY as valid JSON, no markdown, no extra text:
 {
   "category_type": "release|community|controversy|sale|other",
+  "headlines": [
+    {"text": "...", "text_kr": "..."},
+    {"text": "...", "text_kr": "..."},
+    {"text": "...", "text_kr": "..."}
+  ],
   "sammy": {
-    "headline": "...", "headline_kr": "...",
     "hook": "...", "hook_kr": "...",
     "detail": "...", "detail_kr": "...",
     "tagline": "...", "tagline_kr": "..."
   },
   "ledy": {
-    "headline": "...", "headline_kr": "...",
     "hook": "...", "hook_kr": "...",
     "detail": "...", "detail_kr": "...",
     "tagline": "...", "tagline_kr": "..."
@@ -909,7 +940,7 @@ async function generateContent(news, target, userContent, catId) {
   if (boxId !== 'content-box') box.scrollIntoView({ behavior:'smooth', block:'start' });
 
   try {
-    const raw = await callClaude(CONTENT_SYSTEM, userContent, 2500);
+    const raw = await callClaude(CONTENT_SYSTEM, userContent, 2800);
     const content = extractJSON(raw);
 
     // Korean is now embedded in the content JSON directly
@@ -931,19 +962,26 @@ function renderContentHTML(content, bodyId) {
     funny:    ['cb-funny',    '😂']
   };
 
-  const personaHTML = (key, avatarSrc, name, tag, cardCls) => {
+  // Track selection state
+  let selectedHeadlineIdx = null;
+  let selectedPersona = null;
+
+  // Build headlines HTML
+  const headlinesHTML = (content.headlines || []).map((h, i) => `
+    <div class="headline-card" id="hcard-${bodyId}-${i}" onclick="selectHeadline('${bodyId}', ${i})">
+      <div class="hcard-en">${h.text}</div>
+      <div class="hcard-kr">${h.text_kr || ''}</div>
+    </div>`).join('');
+
+  // Build persona card HTML
+  const personaCardHTML = (key, avatarSrc, name, tag, cardCls) => {
     const c = content[key];
-    return `<div class="pcard ${cardCls}">
+    return `<div class="pcard ${cardCls} selectable" id="pcard-${bodyId}-${key}" onclick="selectPersona('${bodyId}', '${key}')">
       <div class="pcard-hdr">
         <img src="${avatarSrc}" style="width:44px;height:44px;border-radius:50%;object-fit:cover;flex-shrink:0;" alt="${name}">
         <div><div class="pname">${name}</div><div class="ptag">${tag}</div></div>
-        <div class="pcard-hdr-right">
-          <button class="copy-btn" id="copy-${key}" onclick="copyPersona('${key}')">Copy</button>
-        </div>
       </div>
-      <div id="persona-${key}">
-        <div class="content-headline">${c.headline}</div>
-        <div class="content-headline-kr">${c.headline_kr || ''}</div>
+      <div id="persona-${bodyId}-${key}">
         <div class="content-block">
           <div class="content-en">${c.hook}</div>
           <div class="content-kr">${c.hook_kr || ''}</div>
@@ -953,13 +991,14 @@ function renderContentHTML(content, bodyId) {
           <div class="content-kr">${c.detail_kr || ''}</div>
         </div>
         <div class="content-tagline">
-          <div class="tagline-en">${c.tagline || c.outlook || ''}</div>
-          <div class="tagline-kr">${c.tagline_kr || c.outlook_kr || ''}</div>
+          <div class="tagline-en">${c.tagline || ''}</div>
+          <div class="tagline-kr">${c.tagline_kr || ''}</div>
         </div>
       </div>
     </div>`;
   };
 
+  // Build comments HTML
   const commentsHTML = (content.comments || []).map(c => {
     const [cls, label] = typeMap[c.type] || ['',''];
     return `<div class="cmt">
@@ -973,30 +1012,117 @@ function renderContentHTML(content, bodyId) {
   }).join('');
 
   document.getElementById(bodyId).innerHTML = `
-    <div class="personas">
-      ${personaHTML('sammy', 'data:image/png;base64,' + SAMMY_IMG, 'Sammy', 'Energetic gaming journalist', 'pcard-sammy')}
-      ${personaHTML('ledy',  'data:image/png;base64,' + LEDY_IMG,  'Ledy',  'Thoughtful gaming journalist', 'pcard-ledy')}
+    <div class="headlines-section">
+      <div class="headlines-label">제목 선택 — 3개 중 하나를 클릭해서 선택하세요</div>
+      <div class="headlines-grid">${headlinesHTML}</div>
     </div>
+
+    <div class="personas-label">본문 선택 — Sammy 또는 Ledy를 클릭해서 선택하세요</div>
+    <div class="personas">
+      ${personaCardHTML('sammy', 'data:image/png;base64,' + SAMMY_IMG, 'Sammy', 'Community angle', 'pcard-sammy')}
+      ${personaCardHTML('ledy',  'data:image/png;base64,' + LEDY_IMG,  'Ledy',  'Industry angle',  'pcard-ledy')}
+    </div>
+
+    <div class="copy-section">
+      <div class="copy-hint" id="copy-hint-${bodyId}">제목과 본문을 선택하면 복사 버튼이 활성화돼요</div>
+      <button class="btn-copy-main" id="copy-main-${bodyId}" disabled onclick="copyFinal('${bodyId}')">
+        📋 복사하기
+      </button>
+    </div>
+
     <div class="comments-sec">
-      <div class="comments-title">💬 가상 커뮤니티 반응</div>
-      ${commentsHTML}
+      <div class="comments-header">
+        <div class="comments-title">💬 가상 커뮤니티 반응</div>
+        <button class="btn-copy-comments" id="copy-cmt-${bodyId}" onclick="copyComments('${bodyId}')">전체 복사</button>
+      </div>
+      <div id="comments-${bodyId}">${commentsHTML}</div>
     </div>`;
+
+  // Store content reference for this bodyId
+  window._contentStore = window._contentStore || {};
+  window._contentStore[bodyId] = { content, selectedHeadlineIdx: null, selectedPersona: null };
+}
+function selectHeadline(bodyId, idx) {
+  const store = window._contentStore?.[bodyId];
+  if (!store) return;
+  store.selectedHeadlineIdx = idx;
+  // Update UI
+  document.querySelectorAll(`[id^="hcard-${bodyId}-"]`).forEach((el, i) => {
+    el.classList.toggle('selected', i === idx);
+  });
+  updateCopyBtn(bodyId);
 }
 
-function copyPersona(key) {
-  const el = document.getElementById('persona-' + key);
-  if (!el) return;
-  // Copy English text only
-  const headlines = el.querySelectorAll('.content-headline');
-  const ens = el.querySelectorAll('.content-en');
-  let text = '';
-  headlines.forEach(h => text += h.textContent + '\n\n');
-  ens.forEach(e => text += e.textContent + '\n');
+function selectPersona(bodyId, key) {
+  const store = window._contentStore?.[bodyId];
+  if (!store) return;
+  store.selectedPersona = key;
+  // Update UI
+  ['sammy','ledy'].forEach(k => {
+    const el = document.getElementById(`pcard-${bodyId}-${k}`);
+    if (el) el.classList.toggle('persona-selected', k === key);
+  });
+  updateCopyBtn(bodyId);
+}
+
+function updateCopyBtn(bodyId) {
+  const store = window._contentStore?.[bodyId];
+  if (!store) return;
+  const btn = document.getElementById(`copy-main-${bodyId}`);
+  const hint = document.getElementById(`copy-hint-${bodyId}`);
+  const ready = store.selectedHeadlineIdx !== null && store.selectedPersona !== null;
+  if (btn) btn.disabled = !ready;
+  if (hint) {
+    if (store.selectedHeadlineIdx === null && store.selectedPersona === null) {
+      hint.textContent = '제목과 본문을 선택하면 복사 버튼이 활성화돼요';
+    } else if (store.selectedHeadlineIdx === null) {
+      hint.textContent = '제목을 선택해주세요';
+    } else if (store.selectedPersona === null) {
+      hint.textContent = 'Sammy 또는 Ledy를 선택해주세요';
+    } else {
+      hint.textContent = '복사할 준비가 됐어요!';
+    }
+  }
+}
+
+function copyFinal(bodyId) {
+  const store = window._contentStore?.[bodyId];
+  if (!store || store.selectedHeadlineIdx === null || !store.selectedPersona) return;
+
+  const headline = store.content.headlines[store.selectedHeadlineIdx];
+  const persona = store.content[store.selectedPersona];
+  if (!headline || !persona) return;
+
+  const text = [
+    headline.text,
+    '',
+    persona.hook,
+    persona.detail,
+    persona.tagline || ''
+  ].filter(Boolean).join('\n');
+
   navigator.clipboard.writeText(text.trim()).then(() => {
-    const btn = document.getElementById('copy-' + key);
-    btn.textContent = '✓ 복사됨';
-    btn.classList.add('copied');
-    setTimeout(() => { btn.textContent = 'Copy'; btn.classList.remove('copied'); }, 2000);
+    const btn = document.getElementById(`copy-main-${bodyId}`);
+    if (btn) {
+      btn.innerHTML = '✓ 복사됨!';
+      btn.classList.add('copied');
+      setTimeout(() => { btn.innerHTML = '📋 복사하기'; btn.classList.remove('copied'); }, 2000);
+    }
+  });
+}
+
+function copyComments(bodyId) {
+  const store = window._contentStore?.[bodyId];
+  if (!store) return;
+  const comments = store.content.comments || [];
+  const text = comments.map(c => `${c.user}: ${c.text}`).join('\n');
+  navigator.clipboard.writeText(text).then(() => {
+    const btn = document.getElementById(`copy-cmt-${bodyId}`);
+    if (btn) {
+      btn.textContent = '✓ 복사됨';
+      btn.classList.add('copied');
+      setTimeout(() => { btn.textContent = '전체 복사'; btn.classList.remove('copied'); }, 2000);
+    }
   });
 }
 
@@ -1038,14 +1164,13 @@ function renderSavedList() {
           <button class="btn btn-sm btn-ghost" style="color:var(--red)" onclick="deleteSaved(${i})">✕</button>
         </div>
       </div>
-      <div class="saved-preview">Sammy: ${s.content?.sammy?.headline || ''} — ${s.content?.sammy?.hook || ''}</div>
+      <div class="saved-preview">${s.content?.headlines?.[0]?.text || ''} — ${s.content?.sammy?.hook || ''}</div>
     </div>`).join('');
 }
 
 function viewSaved(i) {
   const s = savedContents[i];
   if (!s) return;
-  const modalBody = document.getElementById('saved-modal-body');
   document.getElementById('saved-modal').classList.remove('hidden');
   renderContentHTML(s.content, 'saved-modal-body');
 }
