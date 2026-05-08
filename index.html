@@ -233,6 +233,26 @@ header{background:var(--surface);border-bottom:2px solid var(--border);padding:0
 .sec-title{font-family:'Syne',sans-serif;font-size:13px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);}
 .sec-title b{color:var(--text);}
 
+/* FUN FACT TAB */
+.ff-section{background:var(--surface);border:2px solid var(--border);border-radius:12px;padding:20px 24px;}
+.ff-controls{display:flex;gap:12px;margin-bottom:20px;flex-wrap:wrap;}
+.ff-search-wrap{display:flex;gap:8px;flex:1;min-width:240px;}
+.ff-input{flex:1;font-family:'Plus Jakarta Sans',sans-serif;font-size:14px;font-weight:500;padding:9px 16px;border:2px solid var(--border2);border-radius:8px;background:var(--surface2);color:var(--text);transition:border-color .15s;}
+.ff-input:focus{outline:none;border-color:var(--accent);}
+.ff-cards{display:flex;flex-direction:column;gap:14px;}
+.ff-card{background:var(--surface2);border:2px solid var(--border);border-radius:10px;padding:18px;transition:border-color .15s;}
+.ff-card:hover{border-color:var(--accent);}
+.ff-card-hdr{display:flex;align-items:flex-start;justify-content:space-between;gap:10px;margin-bottom:10px;}
+.ff-game{font-size:11px;font-weight:700;color:var(--accent);text-transform:uppercase;letter-spacing:.06em;margin-bottom:4px;}
+.ff-title{font-size:16px;font-weight:700;line-height:1.35;margin-bottom:10px;}
+.ff-body{font-size:14px;line-height:1.7;color:var(--text);margin-bottom:12px;}
+.ff-footer{display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap;}
+.ff-link{font-size:12px;color:var(--accent);font-weight:600;text-decoration:none;display:inline-flex;align-items:center;gap:4px;}
+.ff-link:hover{text-decoration:underline;}
+.ff-actions{display:flex;gap:6px;}
+.ff-tag{font-size:10px;font-weight:700;padding:2px 8px;border-radius:10px;background:var(--blue-bg);color:var(--blue);border:1px solid rgba(37,99,235,.2);}
+.ff-tag-news{background:var(--purple-bg);color:var(--purple);border-color:rgba(124,58,237,.2);}
+
 /* SPLIT LAYOUT */
 .news-split{display:grid;grid-template-columns:55fr 45fr;gap:24px;align-items:start;}
 .news-left{display:flex;flex-direction:column;gap:20px;min-width:0;}
@@ -287,10 +307,15 @@ header{background:var(--surface);border-bottom:2px solid var(--border);padding:0
 </header>
 
 <!-- TABS -->
-<div class="main-tabs" style="max-width:1800px;margin:0 auto;padding:0 32px;">
-  <button class="mtab on" onclick="switchTab('news',this)">📰 뉴스 피드</button>
-  <button class="mtab" onclick="switchTab('bookmarks',this)">🔖 북마크 <span class="tab-badge" id="bm-badge"></span></button>
-  <button class="mtab" onclick="switchTab('saved',this)">📦 저장된 컨텐츠 <span class="tab-badge" id="saved-badge"></span></button>
+<div class="main-tabs" style="max-width:1800px;margin:0 auto;padding:0 32px;display:flex;justify-content:space-between;">
+  <div style="display:flex;">
+    <button class="mtab on" onclick="switchTab('news',this)">📰 뉴스 피드</button>
+    <button class="mtab" onclick="switchTab('funfact',this)">💡 Fun Facts</button>
+  </div>
+  <div style="display:flex;">
+    <button class="mtab" onclick="switchTab('bookmarks',this)">🔖 북마크 <span class="tab-badge" id="bm-badge"></span></button>
+    <button class="mtab" onclick="switchTab('saved',this)">📦 저장된 컨텐츠 <span class="tab-badge" id="saved-badge"></span></button>
+  </div>
 </div>
 
 <div class="app">
@@ -375,8 +400,15 @@ header{background:var(--surface);border-bottom:2px solid var(--border);padding:0
   <div id="tab-bookmarks" style="display:none;">
     <div class="bm-section">
       <div class="bm-hdr">
-        <div class="sec-title">🔖 <b>저장된 뉴스</b></div>
-        <button class="btn btn-sm btn-ghost" style="color:var(--red)" onclick="clearBookmarks()">전체 삭제</button>
+        <div class="sec-title">🔖 <b>북마크</b></div>
+        <div style="display:flex;align-items:center;gap:8px;">
+          <div style="display:flex;gap:4px;">
+            <button class="ftab on" id="bm-filter-all" onclick="setBmFilter('all',this)" style="font-size:11px;padding:4px 10px;">전체</button>
+            <button class="ftab" id="bm-filter-news" onclick="setBmFilter('news',this)" style="font-size:11px;padding:4px 10px;">📰 뉴스</button>
+            <button class="ftab" id="bm-filter-fact" onclick="setBmFilter('fact',this)" style="font-size:11px;padding:4px 10px;">💡 상식</button>
+          </div>
+          <button class="btn btn-sm btn-ghost" style="color:var(--red)" onclick="clearBookmarks()">전체 삭제</button>
+        </div>
       </div>
       <div id="bm-list"></div>
     </div>
@@ -393,6 +425,28 @@ header{background:var(--surface);border-bottom:2px solid var(--border);padding:0
         </div>
       </div>
       <div id="content-body-bm"></div>
+    </div>
+  </div>
+
+  <!-- ══ FUN FACT TAB ══ -->
+  <div id="tab-funfact" style="display:none;">
+    <div class="ff-section">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;">
+        <div class="sec-title">💡 <b>Game Fun Facts</b> <span style="font-size:11px;font-weight:400;color:var(--dim);margin-left:6px;">Wikipedia 기반 검증된 정보</span></div>
+      </div>
+      <div class="ff-controls">
+        <div class="ff-search-wrap">
+          <input class="ff-input" type="text" id="ff-search" placeholder="게임 이름을 입력하세요 (영문 권장)..." onkeydown="if(event.key==='Enter') searchFunFact()">
+          <button class="btn btn-primary" onclick="searchFunFact()" id="ff-search-btn">🔍 검색</button>
+        </div>
+        <button class="btn" onclick="randomFunFact()" id="ff-random-btn" style="white-space:nowrap;">🎲 랜덤 게임</button>
+      </div>
+      <div id="ff-container">
+        <div class="empty-state">
+          <strong>게임 Fun Facts를 불러와보세요</strong>
+          게임 이름을 검색하거나 랜덤 버튼을 눌러보세요
+        </div>
+      </div>
     </div>
   </div>
 
@@ -463,14 +517,23 @@ function openModal() {
 function closeModal() { document.getElementById('modal').classList.add('hidden'); }
 
 // ── TABS ──
+let bmFilter = 'all';
+
 function switchTab(tab, el) {
   document.querySelectorAll('.mtab').forEach(t => t.classList.remove('on'));
   el.classList.add('on');
-  ['news','bookmarks','saved'].forEach(t => {
+  ['news','funfact','bookmarks','saved'].forEach(t => {
     document.getElementById('tab-' + t).style.display = t === tab ? '' : 'none';
   });
   if (tab === 'bookmarks') renderBookmarks();
   if (tab === 'saved') renderSavedList();
+}
+
+function setBmFilter(filter, el) {
+  bmFilter = filter;
+  document.querySelectorAll('#bm-filter-all, #bm-filter-news, #bm-filter-fact').forEach(b => b.classList.remove('on'));
+  el.classList.add('on');
+  renderBookmarks();
 }
 
 function updateBadges() {
@@ -770,26 +833,48 @@ function toggleBookmark(catId) {
 
 function renderBookmarks() {
   const list = document.getElementById('bm-list');
-  if (!bookmarks.length) {
-    list.innerHTML = '<div class="empty-state"><strong>저장된 뉴스가 없어요</strong>뉴스 카드의 🤍 버튼으로 저장해보세요!</div>';
+  const filtered = bmFilter === 'all' ? bookmarks
+    : bmFilter === 'news' ? bookmarks.filter(b => b.type !== 'fact')
+    : bookmarks.filter(b => b.type === 'fact');
+
+  if (!filtered.length) {
+    list.innerHTML = `<div class="empty-state"><strong>${bmFilter === 'fact' ? '저장된 Fun Fact가 없어요' : bmFilter === 'news' ? '저장된 뉴스가 없어요' : '저장된 항목이 없어요'}</strong></div>`;
     return;
   }
   const catMap = Object.fromEntries(CATS.map(c => [c.id, c]));
-  list.innerHTML = bookmarks.map((b, i) => {
+  list.innerHTML = filtered.map((b, i) => {
+    const realIdx = bookmarks.indexOf(b);
+    if (b.type === 'fact') {
+      return `<div class="bm-card fade">
+        <div class="bm-info">
+          <div style="display:flex;align-items:center;gap:6px;margin-bottom:4px;">
+            <span class="ff-tag">💡 상식</span>
+            <span style="font-size:11px;color:var(--dim);">${b.game || ''}</span>
+          </div>
+          <div class="bm-title">${b.title}</div>
+          <div style="font-size:13px;color:var(--muted);line-height:1.5;margin-top:4px;">${b.body || ''}</div>
+        </div>
+        <div class="bm-actions">
+          ${b.link ? `<a href="${b.link}" target="_blank" rel="noopener" class="btn btn-sm btn-ghost">🔗</a>` : ''}
+          <button class="btn btn-sm btn-ghost" style="color:var(--red)" onclick="removeBookmark(${realIdx})">✕</button>
+        </div>
+      </div>`;
+    }
     const cat = catMap[b.catId] || CATS[4];
     return `<div class="bm-card fade">
       <div class="bm-info">
+        <div style="display:flex;align-items:center;gap:6px;margin-bottom:4px;">
+          <span class="ff-tag ff-tag-news">📰 뉴스</span>
+          <span class="cat-badge ${cat.cls}" style="font-size:10px;padding:2px 8px;">${cat.label}</span>
+        </div>
         <div class="bm-title">${b.title}</div>
         <div class="bm-title-kr">${b.title_kr || ''}</div>
-        <div class="bm-meta">
-          <span class="cat-badge ${cat.cls}" style="font-size:10px;padding:2px 8px;">${cat.label}</span>
-          ${b.source} · ${formatDate(b.pubDate)}
-        </div>
+        <div class="bm-meta">${b.source} · ${formatDate(b.pubDate)}</div>
       </div>
       <div class="bm-actions">
         ${b.link ? `<a href="${b.link}" target="_blank" rel="noopener" class="btn btn-sm btn-ghost">🔗</a>` : ''}
-        <button class="btn btn-sm btn-primary" onclick="generateFromBm(${i})">📱 컨텐츠 생성</button>
-        <button class="btn btn-sm btn-ghost" style="color:var(--red)" onclick="removeBookmark(${i})">✕</button>
+        <button class="btn btn-sm btn-primary" onclick="generateFromBm(${realIdx})">📱 컨텐츠 생성</button>
+        <button class="btn btn-sm btn-ghost" style="color:var(--red)" onclick="removeBookmark(${realIdx})">✕</button>
       </div>
     </div>`;
   }).join('');
@@ -1199,6 +1284,155 @@ function closeContent() {
   if (ph) ph.style.display = '';
 }
 function closeContentBm() { document.getElementById('content-box-bm').classList.remove('show'); }
+
+// ── FUN FACT ──
+const POPULAR_GAMES = [
+  'The Legend of Zelda: Breath of the Wild',
+  'Red Dead Redemption 2',
+  'Dark Souls',
+  'The Witcher 3: Wild Hunt',
+  'Super Mario 64',
+  'Half-Life 2',
+  'Metal Gear Solid',
+  'Shadow of the Colossus',
+  'Halo: Combat Evolved',
+  'Final Fantasy VII',
+  'Chrono Trigger',
+  'Portal',
+  'Bioshock',
+  'The Last of Us',
+  'God of War',
+  'Sekiro: Shadows Die Twice',
+  'Hollow Knight',
+  'Undertale',
+  'Celeste',
+  'Disco Elysium'
+];
+
+async function fetchWikipediaContent(gameTitle) {
+  const searchUrl = `https://en.wikipedia.org/w/api.php?action=query&list=search&srsearch=${encodeURIComponent(gameTitle + ' video game')}&format=json&origin=*&srlimit=1`;
+  const searchRes = await fetch(searchUrl);
+  const searchData = await searchRes.json();
+  const pages = searchData?.query?.search;
+  if (!pages || !pages.length) throw new Error(`Wikipedia에서 "${gameTitle}"을 찾지 못했어요`);
+
+  const pageTitle = pages[0].title;
+  const contentUrl = `https://en.wikipedia.org/w/api.php?action=query&titles=${encodeURIComponent(pageTitle)}&prop=extracts|info&exintro=false&explaintext=true&inprop=url&format=json&origin=*`;
+  const contentRes = await fetch(contentUrl);
+  const contentData = await contentRes.json();
+  const page = Object.values(contentData.query.pages)[0];
+  if (!page || page.missing !== undefined) throw new Error('페이지를 찾지 못했어요');
+
+  return {
+    title: page.title,
+    extract: page.extract?.substring(0, 8000) || '',
+    url: page.fullurl || `https://en.wikipedia.org/wiki/${encodeURIComponent(pageTitle)}`
+  };
+}
+
+const FF_SYSTEM = `You are extracting fun facts about video games from Wikipedia content.
+Extract exactly 3 interesting, surprising, or little-known facts from the provided Wikipedia text.
+
+Each fact must:
+- Be directly supported by the Wikipedia text provided (no invention)
+- Be genuinely interesting or surprising
+- Focus on development history, design decisions, cultural impact, records, or behind-the-scenes stories
+- NOT be obvious basic information (genre, release date, developer name alone)
+
+For each fact provide:
+- title: Short punchy headline, max 8 words, grabs attention immediately
+- body: The fact explained clearly in English, max 280 characters. Informative, direct, no fluff.
+
+Also provide the game name as it appears in Wikipedia.
+
+Respond ONLY as valid JSON, no markdown:
+{
+  "game": "Official game name from Wikipedia",
+  "facts": [
+    {"title": "...", "body": "..."},
+    {"title": "...", "body": "..."},
+    {"title": "...", "body": "..."}
+  ]
+}`;
+
+async function loadFunFacts(gameTitle) {
+  const container = document.getElementById('ff-container');
+  container.innerHTML = '<div class="empty-state"><span class="spinner"></span> Wikipedia에서 정보를 가져오고 있어요...</div>';
+
+  try {
+    const wiki = await fetchWikipediaContent(gameTitle);
+    const prompt = `Game: "${wiki.title}"\n\nWikipedia content:\n${wiki.extract}`;
+    const raw = await callClaude(FF_SYSTEM, prompt, 1200);
+    const data = extractJSON(raw);
+    renderFunFacts(data, wiki.url);
+  } catch(e) {
+    container.innerHTML = `<div class="empty-state"><strong>정보를 가져오지 못했어요</strong>${e.message}</div>`;
+  }
+}
+
+function renderFunFacts(data, wikiUrl) {
+  const container = document.getElementById('ff-container');
+  if (!data.facts || !data.facts.length) {
+    container.innerHTML = '<div class="empty-state"><strong>Fun fact를 찾지 못했어요</strong>다른 게임을 시도해보세요</div>';
+    return;
+  }
+  container.innerHTML = `<div class="ff-cards">${data.facts.map((f, i) => `
+    <div class="ff-card fade" style="animation-delay:${i*0.08}s">
+      <div class="ff-game">${data.game}</div>
+      <div class="ff-title">${f.title}</div>
+      <div class="ff-body">${f.body}</div>
+      <div class="ff-footer">
+        <a class="ff-link" href="${wikiUrl}" target="_blank" rel="noopener">🔗 Wikipedia 원문 ↗</a>
+        <div class="ff-actions">
+          <button class="btn-icon" onclick="bookmarkFact(${i}, ${JSON.stringify(data).replace(/'/g,"\'")},'${wikiUrl}')" id="ff-bm-${i}" title="북마크 저장">🤍</button>
+          <button class="copy-btn" onclick="copyFact(${i},'${encodeURIComponent(f.title)}','${encodeURIComponent(f.body)}')" id="ff-copy-${i}">Copy</button>
+        </div>
+      </div>
+    </div>`).join('')}</div>`;
+}
+
+function copyFact(idx, titleEnc, bodyEnc) {
+  const title = decodeURIComponent(titleEnc);
+  const body = decodeURIComponent(bodyEnc);
+  navigator.clipboard.writeText(title + '\n\n' + body).then(() => {
+    const btn = document.getElementById('ff-copy-' + idx);
+    if (btn) { btn.textContent = '✓ 복사됨'; btn.classList.add('copied'); setTimeout(() => { btn.textContent = 'Copy'; btn.classList.remove('copied'); }, 2000); }
+  });
+}
+
+function bookmarkFact(idx, dataStr, wikiUrl) {
+  const data = typeof dataStr === 'string' ? JSON.parse(dataStr) : dataStr;
+  const fact = data.facts[idx];
+  const existing = bookmarks.findIndex(b => b.type === 'fact' && b.title === fact.title);
+  if (existing >= 0) {
+    bookmarks.splice(existing, 1);
+    const btn = document.getElementById('ff-bm-' + idx);
+    if (btn) { btn.innerHTML = '🤍'; btn.classList.remove('saved'); }
+  } else {
+    bookmarks.unshift({ type: 'fact', game: data.game, title: fact.title, body: fact.body, link: wikiUrl, savedAt: Date.now() });
+    const btn = document.getElementById('ff-bm-' + idx);
+    if (btn) { btn.innerHTML = '🔖'; btn.classList.add('saved'); }
+  }
+  localStorage.setItem('px_bookmarks', JSON.stringify(bookmarks));
+  updateBadges();
+}
+
+async function searchFunFact() {
+  const q = document.getElementById('ff-search').value.trim();
+  if (!q) return;
+  const btn = document.getElementById('ff-search-btn');
+  btn.disabled = true; btn.innerHTML = '<span class="spinner"></span> 검색 중...';
+  await loadFunFacts(q);
+  btn.disabled = false; btn.innerHTML = '🔍 검색';
+}
+
+async function randomFunFact() {
+  const btn = document.getElementById('ff-random-btn');
+  btn.disabled = true; btn.innerHTML = '<span class="spinner"></span> 가져오는 중...';
+  const game = POPULAR_GAMES[Math.floor(Math.random() * POPULAR_GAMES.length)];
+  await loadFunFacts(game);
+  btn.disabled = false; btn.innerHTML = '🎲 랜덤 게임';
+}
 
 // ── INIT ──
 initKeys();
