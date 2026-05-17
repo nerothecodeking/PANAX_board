@@ -296,7 +296,7 @@ header{background:var(--surface);border-bottom:2px solid var(--border);padding:0
 <header>
   <div>
     <div class="logo">PANAX <span class="logo-badge">BOARD</span></div>
-    <div class="version-tag">PANAX_board 1.1 (250513)</div>
+    <div class="version-tag">PANAX_board 1.1.1 (250518)</div>
   </div>
   <div class="hdr-right">
     <div class="dot-row">
@@ -1110,6 +1110,19 @@ async function generateContent(news, target, userContent, catId) {
   }
 }
 
+function cleanContent(str) {
+  if (!str) return '';
+  return str
+    .replace(/—/g, '')
+    .replace(/–/g, '')
+    .replace(/ - /g, ' ')
+    .replace(/\.\.\.|…/g, '.')
+    .replace(/\*/g, '')
+    .replace(/"/g, "'")
+    .replace(/\s{2,}/g, ' ')
+    .trim();
+}
+
 function renderContentHTML(content, bodyId) {
   const typeMap = {
     agree:    ['cb-agree',    '동의 ✓'],
@@ -1166,22 +1179,6 @@ function renderContentHTML(content, bodyId) {
     </div>`;
   }).join('');
 
-  // Remove em dashes from all content
-  const cleanContent = (str) => {
-    if (!str) return '';
-    return str
-      .replace(/—/g, '')           // em dash 완전 제거
-      .replace(/–/g, '')           // en dash 완전 제거
-      .replace(/ - /g, ' ')        // 공백+하이픈+공백 (문장 연결용) 제거
-      .replace(/\.\.\.|…/g, '.')  // 말줄임표 → 마침표
-      .replace(/\*/g, '')          // 별표 제거
-      .replace(/"{1}/g, (m, offset, str) => {
-        // 큰따옴표 → 작은따옴표 (단, $price 등 맥락 유지)
-        return "'";
-      })
-      .replace(/\s{2,}/g, ' ')     // 이중 공백 제거
-      .trim();
-  };
   document.getElementById(bodyId).innerHTML = `
     <div class="headlines-section">
       <div class="headlines-label">제목 선택 — 3개 중 하나를 클릭해서 선택하세요</div>
