@@ -296,7 +296,7 @@ header{background:var(--surface);border-bottom:2px solid var(--border);padding:0
 <header>
   <div>
     <div class="logo">PANAX <span class="logo-badge">BOARD</span></div>
-    <div class="version-tag">PANAX_board 1.1.1 (250518)</div>
+    <div class="version-tag">PANAX_board 1.1 (250513)</div>
   </div>
   <div class="hdr-right">
     <div class="dot-row">
@@ -950,40 +950,40 @@ CONTENT STRUCTURE (per persona)
 
 No headline per persona — shared headlines are generated separately.
 
-- hook: ONE sentence only. Max 25 words. The single most specific and surprising fact from the article. No setup. No context first. The fact itself IS the hook.
-- detail: 1 to 2 sentences. Max 25 words per sentence. Cover the key supporting facts. Do NOT invent, infer, or assume any numbers, dates, or facts not explicitly stated in the provided article content. If a fact is not in the source, do not include it.
-- tagline: ONE question only. No observation, no statement before it. Just one specific, direct question to the reader. Max 12 words. No emoji.
+- hook: ONE sentence. The single most specific and surprising fact from the article. No setup. No context first. The fact itself IS the hook.
+- detail: ONE sentence. The most important supporting fact or context. Keep it tight.
+- tagline: ONE line. Factual observation or implication + specific reader question. No emoji.
 
 CATEGORY-SPECIFIC ANGLES:
 
 RELEASE:
 - Sammy hook: What makes this release matter to players right now — platform, date, or a standout feature.
 - Ledy hook: What this release signals about the developer's direction or market position.
-- Both detail: Key specs and context — platform, release date, defining features. Use 2 sentences if needed.
-- Both tagline: One punchy observation + specific question. Not a summary.
+- Both detail: Key specs — platform, release date, one defining feature.
+- Both tagline: Implication for players or industry + specific question.
 
 COMMUNITY:
 - Sammy hook: The exact action, post, or moment that sparked the reaction.
 - Ledy hook: What this community behavior reveals about the game's relationship with its audience.
-- Both detail: What actually happened, clearly stated. Include key numbers or reactions if relevant. Use 2 sentences if needed.
-- Both tagline: One punchy observation + specific question to the reader.
+- Both detail: What actually happened, clearly stated.
+- Both tagline: Where this leads + specific question about the reader's take.
 
 CONTROVERSY:
 - Sammy hook: What the community is reacting to and how strongly.
 - Ledy hook: The factual core of the dispute — what happened, who said what.
-- Both detail: Both sides of the issue, stated factually. No opinion, no judgment. Use 2 sentences if needed.
-- Both tagline: One neutral observation + one specific open question. Never a verdict or summary.
+- Both detail: Both sides of the issue, stated factually. No opinion, no judgment.
+- Both tagline: Neutral next step or open question — never a verdict.
 
 SALE:
 - Sammy hook: The deal itself — what it is, how long, how much.
 - Ledy hook: Why this sale matters in context — timing, platform strategy, or value.
-- Both detail: Exact conditions, duration, platforms, and any relevant context. Use 2 sentences if needed.
-- Both tagline: One specific question to the reader only. No statement before it.
+- Both detail: Exact conditions, duration, platforms.
+- Both tagline: Who this is for + specific question.
 
 OTHER:
 - Both hook: The single most newsworthy fact, stated immediately.
-- Both detail: Key context and background facts. Use 2 sentences if the story warrants it.
-- Both tagline: One punchy observation + specific question.
+- Both detail: Key context or background.
+- Both tagline: Implication + specific question.
 
 ═══════════════════════════════
 HEADLINES (3 shared options)
@@ -1012,15 +1012,7 @@ OUTPUT RULES
 - Never quote the article directly (copyright)
 - No emoji anywhere except in comments
 - No all-caps for emphasis
-- Usernames for comments: mix of uppercase, lowercase, underscores (_), and numbers freely. Examples: DeepDiveNorris, Surface_Skeptic99, KelpForestKev_2, xX_GamerPro_Xx. Be creative.
-- NEVER use em dashes (—) anywhere. Rewrite the sentence instead.
-- NEVER invent, infer, or assume facts, numbers, dates, or names not explicitly provided in the article content. If you are not certain a fact is in the source, omit it.
-- NEVER use hyphens (-) to connect clauses or as punctuation. Hyphens are ONLY allowed inside game titles (Spider-Man), prices ($59.99), or compound adjectives (story-driven). Never use " - " with spaces around it.
-- NEVER use double quotation marks (") for emphasis or any purpose. Use single quotes (') only when quoting a title or term.
-- NEVER use ellipsis (...) or (…). End the sentence with a period instead.
-- NEVER use asterisks (*) for emphasis or formatting.
-- NEVER use # symbols unless part of a proper title.
-- Dollar signs ($) are allowed only for prices. No other special characters.
+- Creative but believable gamer usernames for comments
 
 Respond ONLY as valid JSON, no markdown, no extra text:
 {
@@ -1111,19 +1103,6 @@ async function generateContent(news, target, userContent, catId) {
   }
 }
 
-function cleanContent(str) {
-  if (!str) return '';
-  return str
-    .replace(/—/g, '')
-    .replace(/–/g, '')
-    .replace(/ - /g, ' ')
-    .replace(/\.\.\.|…/g, '.')
-    .replace(/\*/g, '')
-    .replace(/"/g, "'")
-    .replace(/\s{2,}/g, ' ')
-    .trim();
-}
-
 function renderContentHTML(content, bodyId) {
   const typeMap = {
     agree:    ['cb-agree',    '동의 ✓'],
@@ -1152,16 +1131,16 @@ function renderContentHTML(content, bodyId) {
       </div>
       <div id="persona-${bodyId}-${key}">
         <div class="content-block">
-          <div class="content-en">${cleanContent(c.hook)}</div>
-          <div class="content-kr">${cleanContent(c.hook_kr)}</div>
+          <div class="content-en">${c.hook}</div>
+          <div class="content-kr">${c.hook_kr || ''}</div>
         </div>
         <div class="content-block">
-          <div class="content-en">${cleanContent(c.detail)}</div>
-          <div class="content-kr">${cleanContent(c.detail_kr)}</div>
+          <div class="content-en">${c.detail}</div>
+          <div class="content-kr">${c.detail_kr || ''}</div>
         </div>
         <div class="content-tagline">
-          <div class="tagline-en">${cleanContent(c.tagline)}</div>
-          <div class="tagline-kr">${cleanContent(c.tagline_kr)}</div>
+          <div class="tagline-en">${c.tagline || ''}</div>
+          <div class="tagline-kr">${c.tagline_kr || ''}</div>
         </div>
       </div>
     </div>`;
@@ -1174,8 +1153,8 @@ function renderContentHTML(content, bodyId) {
       <div class="cmt-av">${(c.user||'?')[0].toUpperCase()}</div>
       <div style="flex:1;">
         <div class="cmt-user">${c.user}<span class="cmt-badge ${cls}">${label}</span></div>
-        <div class="cmt-en">${cleanContent(c.text)}</div>
-        <div class="cmt-kr">${cleanContent(c.text_kr)}</div>
+        <div class="cmt-en">${c.text}</div>
+        <div class="cmt-kr">${c.text_kr || ''}</div>
       </div>
     </div>`;
   }).join('');
@@ -1284,7 +1263,7 @@ function copyComments(bodyId) {
   const store = window._contentStore?.[bodyId];
   if (!store) return;
   const comments = store.content.comments || [];
-  const text = comments.map(c => `${c.user}: ${cleanContent(c.text)}`).join('\n');
+  const text = comments.map(c => `${c.user}: ${c.text}`).join('\n');
   navigator.clipboard.writeText(text).then(() => {
     const btn = document.getElementById(`copy-cmt-${bodyId}`);
     if (btn) {
