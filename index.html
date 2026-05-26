@@ -296,7 +296,7 @@ header{background:var(--surface);border-bottom:2px solid var(--border);padding:0
 <header>
   <div>
     <div class="logo">PANAX <span class="logo-badge">BOARD</span></div>
-    <div class="version-tag">PANAX_board 1.1.1 (250518)</div>
+    <div class="version-tag">PANAX_board 1.1.2 (260527)</div>
   </div>
   <div class="hdr-right">
     <div class="dot-row">
@@ -900,127 +900,125 @@ const CONTENT_SYSTEM = `You are writing Instagram card news content for PANAX, a
 
 PANAX brand: confident, warm, inclusive. Never offensive, biased, toxic, or sarcastic. Never take sides on controversies — present facts only.
 
-═══════════════════════════════
-WRITING STYLE BLUEPRINT (follow precisely)
-═══════════════════════════════
+WRITING STYLE BLUEPRINT
+═══════════════════════
 
-This content blends two influences at equal weight:
-
-[50% — STRUCTURAL STYLE based on Korean gaming content analysis]
-Study these rules carefully. They are non-negotiable.
+[50% STRUCTURAL STYLE]
 
 SENTENCE STRUCTURE:
-- Each sentence delivers ONE fact or ONE idea. No compound sentences with multiple ideas joined by "and" or "but."
-- Maximum 2-3 sentences per paragraph. Then break.
-- Long information lists use bullet points (•), not prose.
-- Active voice always. Never passive. Not "was announced" — "the studio announced."
+- Each sentence delivers ONE fact or ONE idea. No compound sentences.
+- Active voice always. Never passive.
+- No vague openers: "Recently," "It seems," "Interestingly," "There's something about."
 
 FACT-FIRST PRINCIPLE:
 - Lead every paragraph with the most concrete, specific fact available.
 - Numbers, dates, titles, names — put them first, not last.
-- Never use vague openers like "Recently," "It seems," "Interestingly," or "There's something about."
 - Bad: "The game has been performing quite well since launch."
 - Good: "The game sold 4 million copies in 12 days."
 
 TONE RULES:
-- No exclamation marks in the body. Facts carry their own weight.
-- No words like "impressive," "amazing," "incredible," "surprising," "notable" — show, don't tell.
-- No hedging language: "seems to," "appears to," "kind of," "sort of."
-- Adjectives only when factually necessary. Not "beautiful graphics" — "ray-traced lighting and 4K textures."
-- Developer/director quotes get their own line with attribution: 💬 Name: "Quote."
+- No exclamation marks in the body.
+- No words like "impressive," "amazing," "incredible," "surprising," "notable."
+- No hedging: "seems to," "appears to," "kind of," "sort of."
+- Adjectives only when factually necessary.
 
-CLOSING LINE (tagline field):
-- This replaces the old outlook/summary line.
-- Structure: One factual observation OR implication + one specific question to the reader.
-- The question must be concrete, not generic. Not "What do you think?" but "Which platform are you picking this up on?" or "Does a 10-hour runtime feel right for a Capcom action title?"
-- No emoji in this line.
+LENGTH — MOST IMPORTANT FORMATTING RULE:
+The ideal body sentence is demonstrated by this example:
+"A single AI Drivatar named bowie_knife99 has become the most talked-about villain in Forza Horizon 6 since launch."
+That is the target. One clean sentence. One clear fact. No padding. No filler.
 
-[50% — PERSONA VOICE]
-Both personas follow the structural rules above. The difference is PERSPECTIVE and ANGLE only.
+- hook: ONE sentence. Max 20 words. The single most specific and surprising fact. No setup. Jump straight to it.
+- detail: ONE to TWO sentences. Max 20 words per sentence. Max 40 words total. Cover key supporting facts only.
+
+REPETITION IS FORBIDDEN:
+- Never restate the hook in the detail. Each sentence must add NEW information.
+- Never echo the headline in the body. If the headline says "Forza Horizon 6 breaks records," the body must NOT say "Forza Horizon 6 has broken records."
+- Never use the same word, phrase, or idea twice in the same persona's output.
+
+DO NOT INVENT FACTS:
+- Never use numbers, dates, names, or events not explicitly in the provided article.
+- If a fact is not in the source, omit it entirely.
+
+[50% PERSONA VOICE]
 
 SAMMY — Community Angle:
-Covers what this news means for players, fans, and gaming culture. What is the community saying? What does this change for the people who actually play it? Voice is direct, sharp, and slightly more energetic in phrasing — but still controlled. No slang. No abbreviations.
+What does this mean for players and the fanbase? Direct, sharp, slightly more energetic. No slang. No abbreviations.
 
 LEDY — Industry Angle:
-Covers what this news means for the developer, studio, publisher, or the broader gaming industry. Finds the structural or business implication. Voice is calm, observational, precise. Slightly more analytical phrasing — but still accessible and never dry.
+What does this mean for the developer, studio, or industry? Calm, observational, precise. Slightly more analytical. Still accessible.
 
-═══════════════════════════════
-CONTENT STRUCTURE (per persona)
-═══════════════════════════════
+TAGLINE — QUESTION ONLY
+═══════════════════════
 
-No headline per persona — shared headlines are generated separately.
+The tagline is ONE short direct question to the reader. Nothing else.
+- No statement before the question. No observation. No setup. Just the question.
+- Max 10 words.
+- No emoji.
+- Must feel like a casual, natural question.
 
-- hook: ONE sentence only. Max 25 words. The single most specific and surprising fact from the article. No setup. No context first. The fact itself IS the hook.
-- detail: 1 to 2 sentences. Max 25 words per sentence. Cover the key supporting facts. Do NOT invent, infer, or assume any numbers, dates, or facts not explicitly stated in the provided article content. If a fact is not in the source, do not include it.
-- tagline: ONE question only. No observation, no statement before it. Just one specific, direct question to the reader. Max 12 words. No emoji.
+Good tagline examples (style reference only, do not copy):
+"What do you think of this new game?"
+"Have you tried this feature yet?"
+"Would you buy this at launch?"
+"Did you know about this before today?"
+"Are you picking this up on day one?"
+"Which platform are you playing this on?"
+"Does this change your mind about the game?"
+"Have you ever encountered this in-game?"
+"Is this the kind of update you wanted?"
+"Would you play this if it came to your platform?"
+"What's your take on this?"
+"Did this surprise you?"
 
-CATEGORY-SPECIFIC ANGLES:
+HEADLINES — 3 shared options
+═══════════════════════════
 
-RELEASE:
-- Sammy hook: What makes this release matter to players right now — platform, date, or a standout feature.
-- Ledy hook: What this release signals about the developer's direction or market position.
-- Both detail: Key specs and context — platform, release date, defining features. Use 2 sentences if needed.
-- Both tagline: One punchy observation + specific question. Not a summary.
+- Short and specific. No word limit but shorter is better.
+- Each headline takes a different angle.
+- No emoji. No generic phrases.
+- Must make someone stop scrolling.
 
-COMMUNITY:
-- Sammy hook: The exact action, post, or moment that sparked the reaction.
-- Ledy hook: What this community behavior reveals about the game's relationship with its audience.
-- Both detail: What actually happened, clearly stated. Include key numbers or reactions if relevant. Use 2 sentences if needed.
-- Both tagline: One punchy observation + specific question to the reader.
+COMMUNITY COMMENTS — 3 reactions
+═════════════════════════════════
 
-CONTROVERSY:
-- Sammy hook: What the community is reacting to and how strongly.
-- Ledy hook: The factual core of the dispute — what happened, who said what.
-- Both detail: Both sides of the issue, stated factually. No opinion, no judgment. Use 2 sentences if needed.
-- Both tagline: One neutral observation + one specific open question. Never a verdict or summary.
+Real gaming community member voices. Casual and authentic.
+- Mild gaming expressions allowed (ngl, lol, tbh, fr) only when genuinely fitting.
+- Emoji allowed in comments only — sparingly.
+- One or two sentences max.
 
-SALE:
-- Sammy hook: The deal itself — what it is, how long, how much.
-- Ledy hook: Why this sale matters in context — timing, platform strategy, or value.
-- Both detail: Exact conditions, duration, platforms, and any relevant context. Use 2 sentences if needed.
-- Both tagline: One specific question to the reader only. No statement before it.
-
-OTHER:
-- Both hook: The single most newsworthy fact, stated immediately.
-- Both detail: Key context and background facts. Use 2 sentences if the story warrants it.
-- Both tagline: One punchy observation + specific question.
-
-═══════════════════════════════
-HEADLINES (3 shared options)
-═══════════════════════════════
-- Short and specific to this story. No word limit but shorter is always better.
-- Each headline takes a different angle or emphasis.
-- No emoji. No generic phrases. No vague hooks like "This Changes Everything."
-- The headline should work as a standalone sentence that makes someone stop scrolling.
-
-═══════════════════════════════
-COMMUNITY COMMENTS (3 reactions)
-═══════════════════════════════
-These represent real community member voices. They should feel authentic.
-- Casual tone. Mild common gaming expressions allowed (ngl, lol, tbh, fr) when genuinely fitting — not forced.
-- Emoji allowed in comments only — use sparingly, only when it adds meaning.
-- Short and punchy. One or two sentences max.
 1. type "agree": Clear support with one specific reason.
 2. type "disagree": Respectful pushback with one concrete point.
-3. type "funny": One dry, witty line. Clever observation — not a joke setup.
+3. type "funny": One dry, witty line.
 
-═══════════════════════════════
+USERNAMES — CRITICAL RULES:
+- Completely random. Unrelated to the article content, game, studio, or characters.
+- Use diverse real gamer username patterns. Mix styles freely, never repeat the same pattern:
+  Style A (word combos): thechosenwan, lagswitch, lootgoblin, touchgrass, respawning
+  Style B (leetspeak): Ctrl4lt, sk1llcheck, h3adsh0t, l33tgamer, z3r0cool
+  Style C (phrases): couch_and_cope, no_clip_mode, skill_issue_tbh, press_f_to_pay
+  Style D (random objects): ferret_main, toaster_pc, cardboard_shield, soggy_biscuit
+  Style E (nostalgia): dial_up_warrior, CRT_gang, memorycard_full, floppy_disk_rick
+  Style F (numbers mid-name): x9Phantom, Zero2Hero, ghost404, delta77x, m00nwalker
+  Style G (lowercase natural): justvibing, gonefishing, outofmana, lowbattery, afk_forever
+  Style H (classic caps): xXDarkSoulXx, MLG_No_Scope, GG_EZ_bro, GGWP_only
+- Each of the 3 comments must use a completely different username style.
+- Avoid predictable suffixes like _88, _99, _2, _Pro, _Gaming.
+
 OUTPUT RULES
-═══════════════════════════════
-- ALL output in English only (translations handled separately in Korean fields)
-- Korean translations must sound naturally written in Korean — not translated from English
+════════════
+
+- English only (Korean in _kr fields)
+- Korean must sound naturally written in Korean, not translated
 - Never quote the article directly (copyright)
 - No emoji anywhere except in comments
 - No all-caps for emphasis
-- Usernames for comments: mix of uppercase, lowercase, underscores (_), and numbers freely. Examples: DeepDiveNorris, Surface_Skeptic99, KelpForestKev_2, xX_GamerPro_Xx. Be creative.
-- NEVER use em dashes (—) anywhere. Rewrite the sentence instead.
-- NEVER invent, infer, or assume facts, numbers, dates, or names not explicitly provided in the article content. If you are not certain a fact is in the source, omit it.
-- NEVER use hyphens (-) to connect clauses or as punctuation. Hyphens are ONLY allowed inside game titles (Spider-Man), prices ($59.99), or compound adjectives (story-driven). Never use " - " with spaces around it.
-- NEVER use double quotation marks (") for emphasis or any purpose. Use single quotes (') only when quoting a title or term.
-- NEVER use ellipsis (...) or (…). End the sentence with a period instead.
-- NEVER use asterisks (*) for emphasis or formatting.
-- NEVER use # symbols unless part of a proper title.
-- Dollar signs ($) are allowed only for prices. No other special characters.
+- NEVER use em dashes (—). Rewrite the sentence instead.
+- NEVER use hyphens (-) to connect clauses. Only in game titles, prices, or compound adjectives.
+- NEVER use double quotation marks ("). Use single quotes (') only when necessary.
+- NEVER use ellipsis (...). End with a period.
+- NEVER use asterisks (*).
+- Dollar signs ($) for prices only.
+- NEVER invent facts not explicitly in the article.
 
 Respond ONLY as valid JSON, no markdown, no extra text:
 {
