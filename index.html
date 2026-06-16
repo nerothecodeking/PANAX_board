@@ -286,19 +286,19 @@ header{background:var(--surface);border-bottom:2px solid var(--border);padding:0
 .steam-block-title{font-family:'Syne',sans-serif;font-size:12px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin:22px 2px 12px;display:flex;align-items:center;gap:8px;}
 .steam-block-title .cnt{background:var(--accent-light);color:var(--accent);border-radius:20px;padding:1px 9px;font-size:11px;}
 .steam-block-title.trailer-t .cnt{background:var(--amber-bg);color:var(--amber);}
-.steam-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:12px;}
+.steam-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(400px,1fr));gap:16px;}
 .steam-card{background:var(--surface2);border:2px solid var(--border);border-radius:10px;overflow:hidden;transition:border-color .15s;}
 .steam-card:hover{border-color:var(--accent);}
 .steam-card .thumb{width:100%;aspect-ratio:16/9;object-fit:cover;display:block;background:var(--border);}
-.steam-card .cbody{padding:9px 10px;}
-.steam-card .ctitle{font-size:11.5px;color:var(--muted);font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-bottom:8px;}
-.steam-card .cbtns{display:flex;gap:6px;}
-.steam-card .cbtns button{flex:1;font-size:11.5px;font-weight:700;padding:7px 6px;border-radius:6px;border:2px solid var(--border2);background:var(--surface);color:var(--text);cursor:pointer;transition:all .15s;}
+.steam-card .cbody{padding:12px 14px;}
+.steam-card .ctitle{font-size:13.5px;color:var(--muted);font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-bottom:10px;}
+.steam-card .cbtns{display:flex;gap:8px;}
+.steam-card .cbtns button{flex:1;font-size:13px;font-weight:700;padding:9px 8px;border-radius:7px;border:2px solid var(--border2);background:var(--surface);color:var(--text);cursor:pointer;transition:all .15s;}
 .steam-card .cbtns button:hover{border-color:var(--accent);background:var(--accent-light);}
 .steam-card .cbtns button.dl.done{border-color:var(--green);background:var(--green-bg);color:var(--green);}
 .steam-trailer{background:var(--surface2);border:2px solid var(--border);border-radius:10px;padding:16px;margin-bottom:12px;}
 .steam-trailer-top{display:flex;gap:12px;align-items:flex-start;margin-bottom:10px;}
-.steam-trailer-top img{width:120px;border-radius:6px;border:1px solid var(--border);flex-shrink:0;}
+.steam-trailer-top img{width:220px;border-radius:8px;border:1px solid var(--border);flex-shrink:0;}
 .steam-trailer-name{font-weight:700;font-size:14px;margin-bottom:4px;}
 .steam-trailer-warn{font-size:11.5px;color:var(--amber);line-height:1.5;}
 .steam-cmd-label{font-size:11px;font-weight:700;color:var(--muted);margin-bottom:6px;}
@@ -307,12 +307,17 @@ header{background:var(--surface);border-bottom:2px solid var(--border);padding:0
 .steam-cmd button{font-size:12px;font-weight:700;padding:6px 14px;border-radius:6px;border:2px solid var(--border2);background:var(--surface);color:var(--text);cursor:pointer;white-space:nowrap;}
 .steam-cmd button:hover{border-color:var(--green);background:var(--green-bg);color:var(--green);}
 .steam-cmd button.copied{border-color:var(--green);background:var(--green-bg);color:var(--green);}
-.steam-howto{font-size:11.5px;color:var(--dim);line-height:1.6;margin-top:8px;padding:8px 12px;background:var(--surface);border-radius:6px;border-left:3px solid var(--amber);}
 .steam-empty{color:var(--dim);font-size:12.5px;padding:10px 2px;}
-.steam-toolbar{margin:16px 2px 0;}
-.steam-toolbar button{font-size:12px;font-weight:700;padding:8px 16px;border-radius:8px;border:2px solid var(--border2);background:var(--surface);color:var(--text);cursor:pointer;}
-.steam-toolbar button:hover{border-color:var(--accent);background:var(--accent-light);}
-.steam-toolbar button.copied{border-color:var(--green);background:var(--green-bg);color:var(--green);}
+/* small count above grid (replaces big label) */
+.steam-count{font-size:11px;font-weight:700;color:var(--dim);letter-spacing:.04em;margin:18px 2px 10px;}
+.steam-count.trailer-c{margin-top:24px;}
+/* ? help icon + hover/focus tooltip */
+.steam-help{display:inline-flex;align-items:center;justify-content:center;width:16px;height:16px;border-radius:50%;background:var(--border2);color:var(--surface);font-size:11px;font-weight:700;cursor:help;position:relative;margin-left:5px;vertical-align:middle;outline:none;}
+.steam-help:hover,.steam-help:focus{background:var(--accent);}
+.steam-tip{visibility:hidden;opacity:0;position:absolute;bottom:135%;left:50%;transform:translateX(-50%);width:280px;max-width:70vw;background:var(--text);color:#f5f4f0;font-size:12px;font-weight:500;line-height:1.6;letter-spacing:0;text-align:left;padding:10px 12px;border-radius:8px;box-shadow:0 6px 20px rgba(0,0,0,.25);z-index:50;transition:opacity .15s;pointer-events:none;}
+.steam-tip b{color:#ffd9a8;}
+.steam-tip::after{content:'';position:absolute;top:100%;left:50%;transform:translateX(-50%);border:6px solid transparent;border-top-color:var(--text);}
+.steam-help:hover .steam-tip,.steam-help:focus .steam-tip{visibility:visible;opacity:1;}
 </style>
 </head>
 <body>
@@ -1803,6 +1808,10 @@ function steamRender(json, id){
   const d = entry.data;
   let html = '';
 
+  // Fixed download folder + Windows-safe game name for yt-dlp filenames
+  const STEAM_DL_DIR = 'C:\\Users\\DT-0009\\Downloads';
+  const safeName = (d.name || 'steam_video').replace(/[\\/:*?"<>|]/g, '_').replace(/\s+/g, ' ').trim();
+
   // Game header
   html += '<div class="steam-game-hdr">';
   if (d.header_image) html += '<img src="' + steamEsc(d.header_image) + '" alt="">';
@@ -1818,7 +1827,7 @@ function steamRender(json, id){
   if (d.background_raw) imgs.push(['배경 이미지', d.background_raw.split('?')[0]]);
 
   const directCount = bodyVids.length + shots.length + imgs.length;
-  html += '<div class="steam-block-title">버튼으로 바로 받기 <span class="cnt">' + directCount + '</span></div>';
+  html += '<div class="steam-count">' + directCount + '개</div>';
   if (directCount){
     html += '<div class="steam-grid">';
     bodyVids.forEach((v, i) => { html += steamAssetCard(v.mp4, v.poster, '무음 클립 ' + (i+1), v.mp4); });
@@ -1829,29 +1838,25 @@ function steamRender(json, id){
     html += '<div class="steam-empty">받을 항목이 없어요</div>';
   }
 
-  // Copy-all-urls
-  const allUrls = [].concat(bodyVids.map(v => v.mp4), shots.map(s => s.path_full.split('?')[0]), imgs.map(p => p[1])).filter(Boolean);
-  if (allUrls.length){
-    html += '<div class="steam-toolbar"><button onclick=\'steamCopyUrls(' + JSON.stringify(allUrls) + ',this)\'>URL 전체 복사 (' + allUrls.length + ')</button></div>';
-  }
-
   // ── TRAILERS (PowerShell / yt-dlp) ──
   const movies = d.movies || [];
   html += '<div class="steam-block-title trailer-t">트레일러 — PowerShell 붙여넣기 <span class="cnt">' + movies.length + '</span></div>';
   if (movies.length){
     movies.forEach((m, i) => {
       const dash = m.dash_h264 || m.dash_av1 || (m.mp4 && (m.mp4.max || m.mp4['480'])) || '';
-      const cmd = 'yt-dlp "' + dash + '"';
+      const outName = safeName + '_트레일러' + (i + 1) + '.%(ext)s';
+      const cmd = 'yt-dlp -P "' + STEAM_DL_DIR + '" -o "' + outName + '" "' + dash + '"';
       const cid = 'steam-cmd-' + i;
       html += '<div class="steam-trailer">';
       html += '<div class="steam-trailer-top">';
       if (m.thumbnail) html += '<img src="' + steamEsc(m.thumbnail) + '" alt="">';
       html += '<div><div class="steam-trailer-name">' + steamEsc(m.name || ('트레일러 ' + (i+1))) + '</div>'
             + '<div class="steam-trailer-warn">⚠ 소리 있는 영상이라 DASH 스트리밍이에요. 페이지에서 직접 저장이 안 되니, 아래 명령어를 PowerShell에 붙여넣으세요.</div></div></div>';
-      html += '<div class="steam-cmd-label">yt-dlp 명령어</div>';
+      html += '<div class="steam-cmd-label">yt-dlp 명령어'
+            + '<span class="steam-help" tabindex="0">?<span class="steam-tip">이 명령어는 <b>다운로드 폴더</b>에 <b>게임 이름</b>으로 저장되게 이미 설정돼 있어요. PowerShell을 열고 그대로 붙여넣기만 하면 됩니다. (yt-dlp + ffmpeg가 설치돼 있어야 소리까지 합쳐져요.)</span></span>'
+            + '</div>';
       html += '<div class="steam-cmd"><code id="' + cid + '">' + steamEsc(cmd) + '</code>'
             + '<button onclick="steamCopyCmd(\'' + cid + '\',this)">복사</button></div>';
-      html += '<div class="steam-howto">처음이면 PowerShell에서 받을 폴더로 먼저 이동하세요. 예: <b>cd C:\\Users\\사용자\\Downloads</b> → 그다음 위 명령어 붙여넣기. (yt-dlp + ffmpeg 설치가 돼 있어야 소리까지 합쳐져요.)</div>';
       html += '</div>';
     });
   } else {
