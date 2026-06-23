@@ -42,6 +42,7 @@ header{background:var(--surface);border-bottom:2px solid var(--border);padding:0
 .btn-icon{background:none;border:none;cursor:pointer;padding:4px 8px;border-radius:6px;transition:all .15s;font-size:18px;color:var(--dim);}
 .btn-icon:hover{background:var(--amber-bg);}
 .btn-icon.saved{color:var(--amber);}
+.btn-saved-state{background:var(--green-bg)!important;border-color:var(--green)!important;color:var(--green)!important;}
 
 /* LAYOUT */
 .app{max-width:1800px;margin:0 auto;padding:20px 32px;display:flex;flex-direction:column;gap:20px;}
@@ -352,7 +353,7 @@ header{background:var(--surface);border-bottom:2px solid var(--border);padding:0
 <header>
   <div>
     <div class="logo">PANAX <span class="logo-badge">BOARD</span></div>
-    <div class="version-tag">PANAX_board 1.2.0 (260616)</div>
+    <div class="version-tag">PANAX_board 1.2.1 (260623)</div>
   </div>
   <div class="hdr-right">
     <div class="dot-row">
@@ -437,7 +438,7 @@ header{background:var(--surface);border-bottom:2px solid var(--border);padding:0
               <div class="content-source" id="content-source" style="font-size:12px;"></div>
             </div>
             <div class="content-actions">
-              <button class="btn btn-sm" onclick="saveCurrentContent()">💾 저장</button>
+              <button class="btn btn-sm" onclick="saveCurrentContent()" id="save-btn-main">💾 저장</button>
               <button class="btn btn-sm btn-ghost" onclick="closeContent()">✕</button>
             </div>
           </div>
@@ -477,7 +478,7 @@ header{background:var(--surface);border-bottom:2px solid var(--border);padding:0
           <div class="content-source" id="content-source-bm"></div>
         </div>
         <div class="content-actions">
-          <button class="btn btn-sm" onclick="saveCurrentContentBm()">💾 저장</button>
+          <button class="btn btn-sm" onclick="saveCurrentContentBm()" id="save-btn-bm">💾 저장</button>
           <button class="btn btn-sm btn-ghost" onclick="closeContentBm()">✕ 닫기</button>
         </div>
       </div>
@@ -1068,11 +1069,11 @@ COMMUNITY COMMENTS — 3 reactions
 Real gaming community member voices. Casual and authentic.
 - Mild gaming expressions allowed (ngl, lol, tbh, fr) only when genuinely fitting.
 - Emoji allowed in comments only — sparingly.
-- One or two sentences max.
+- VERY SHORT. Max 12 words per comment. A single short sentence or even just a quick exclamation. Keep the same casual mood and energy, just say it in fewer words.
 
-1. type "agree": Clear support with one specific reason.
-2. type "disagree": Respectful pushback with one concrete point.
-3. type "funny": One dry, witty line.
+1. type "agree": Clear support with one specific reason, in as few words as possible.
+2. type "disagree": Respectful pushback with one concrete point, in as few words as possible.
+3. type "funny": One dry, witty one-liner. Short and punchy.
 
 USERNAMES
 ═════════
@@ -1238,7 +1239,7 @@ function renderContentHTML(content, bodyId) {
           <div class="content-kr">${cleanContent(c.detail_kr)}</div>
         </div>
         <div class="content-tagline">
-          <div class="tagline-en">${cleanContent(c.tagline)}</div>
+          <div class="tagline-en">💭 ${cleanContent(c.tagline)}</div>
           <div class="tagline-kr">${cleanContent(c.tagline_kr)}</div>
         </div>
       </div>
@@ -1345,7 +1346,7 @@ function copyFinal(bodyId) {
     '',
     persona.hook,
     persona.detail,
-    persona.tagline || ''
+    persona.tagline ? '💭 ' + persona.tagline : ''
   ].filter(Boolean).join('\n');
 
   navigator.clipboard.writeText(text.trim()).then(() => {
@@ -1374,11 +1375,11 @@ function copyComments(bodyId) {
 }
 
 // ── SAVE CONTENT ──
-function saveCurrentContent()   { doSaveContent(lastGeneratedContent); }
-function saveCurrentContentBm() { doSaveContent(lastGeneratedContentBm); }
+function saveCurrentContent()   { doSaveContent(lastGeneratedContent, 'save-btn-main'); }
+function saveCurrentContentBm() { doSaveContent(lastGeneratedContentBm, 'save-btn-bm'); }
 
-function doSaveContent(result) {
-  if (!result) { alert('저장할 컨텐츠가 없어요. 먼저 컨텐츠를 생성해주세요.'); return; }
+function doSaveContent(result, btnId) {
+  if (!result) return;
   const { content, kr, news } = result;
   const saved = {
     id: Date.now(),
@@ -1390,7 +1391,16 @@ function doSaveContent(result) {
   savedContents.unshift(saved);
   localStorage.setItem('px_saved', JSON.stringify(savedContents));
   updateBadges();
-  alert('저장됐어요! 📦 "저장된 컨텐츠" 탭에서 확인하세요.');
+
+  const btn = document.getElementById(btnId);
+  if (btn) {
+    btn.innerHTML = '✓ 저장됨';
+    btn.classList.add('btn-saved-state');
+    setTimeout(() => {
+      btn.innerHTML = '💾 저장';
+      btn.classList.remove('btn-saved-state');
+    }, 1500);
+  }
 }
 
 function renderSavedList() {
