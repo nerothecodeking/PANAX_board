@@ -319,6 +319,50 @@ header{background:var(--surface);border-bottom:2px solid var(--border);padding:0
 .steam-tip b{color:#ffd9a8;}
 .steam-tip::after{content:'';position:absolute;top:100%;left:50%;transform:translateX(-50%);border:6px solid transparent;border-top-color:var(--text);}
 .steam-help:hover .steam-tip,.steam-help:focus .steam-tip{visibility:visible;opacity:1;}
+
+/* ══ SRT GENERATOR TAB (srt- prefixed, isolated from rest of board) ══ */
+.srt-panel{background:var(--surface);border:2px solid var(--border);border-radius:12px;padding:22px 24px;margin-bottom:20px;}
+.srt-panel-title{font-family:'Syne',sans-serif;font-size:13px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--accent);margin-bottom:6px;}
+.srt-panel-desc{font-size:13px;color:var(--muted);margin-bottom:14px;line-height:1.5;}
+.srt-label{display:block;font-size:13px;font-weight:700;margin-bottom:6px;color:var(--text);}
+.srt-field{margin-bottom:20px;}
+.srt-field:last-child{margin-bottom:0;}
+.srt-input{width:100%;padding:10px 14px;border:2px solid var(--border2);border-radius:8px;font-family:'Plus Jakarta Sans',sans-serif;font-size:14px;color:var(--text);background:var(--surface2);}
+.srt-input:focus{outline:none;border-color:var(--accent);}
+.srt-row{display:flex;gap:10px;align-items:flex-end;}
+.srt-row > div{flex:1;}
+.srt-filebox{border:3px dashed var(--border2);border-radius:10px;padding:36px 16px;text-align:center;background:var(--surface2);cursor:pointer;transition:all .15s;min-height:120px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;}
+.srt-filebox:hover{border-color:var(--accent);}
+.srt-filebox.dragover{border-color:var(--accent);background:var(--accent-light);}
+.srt-filebox.has-file{border-color:var(--green);background:var(--green-bg);}
+.srt-filebox input{display:none;}
+.srt-filebox-icon{font-size:28px;opacity:.5;}
+.srt-filebox-label{font-size:14px;color:var(--muted);font-weight:600;}
+.srt-filebox-label.has-file{color:var(--green);font-weight:700;}
+.srt-filebox-sub{font-size:12px;color:var(--dim);}
+.srt-textarea{width:100%;min-height:160px;padding:12px 16px;border:2px solid var(--border2);border-radius:8px;font-family:'Plus Jakarta Sans',sans-serif;font-size:14px;line-height:1.6;color:var(--text);background:var(--surface2);resize:vertical;}
+.srt-textarea:focus{outline:none;border-color:var(--accent);}
+.srt-hint{font-size:12px;color:var(--dim);margin-top:6px;line-height:1.5;}
+.srt-status{font-size:13px;padding:12px 14px;border-radius:8px;margin-top:14px;line-height:1.5;display:none;}
+.srt-status.show{display:block;}
+.srt-status.info{background:var(--accent-light);color:var(--accent);}
+.srt-status.err{background:var(--red-bg);color:var(--red);}
+.srt-status.ok{background:var(--green-bg);color:var(--green);}
+.srt-slider-row{display:flex;align-items:center;gap:14px;}
+.srt-slider-row input[type=range]{flex:1;height:4px;-webkit-appearance:none;background:var(--border2);border-radius:4px;outline:none;}
+.srt-slider-row input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:18px;height:18px;border-radius:50%;background:var(--accent);cursor:pointer;border:2px solid #fff;box-shadow:0 0 0 1px var(--accent);}
+.srt-slider-row input[type=range]::-moz-range-thumb{width:18px;height:18px;border-radius:50%;background:var(--accent);cursor:pointer;border:2px solid #fff;box-shadow:0 0 0 1px var(--accent);}
+.srt-num-box{display:flex;align-items:center;gap:4px;}
+.srt-num-box input[type=number]{width:64px;padding:7px 8px;border:2px solid var(--border2);border-radius:6px;font-size:14px;font-weight:700;text-align:center;background:var(--surface2);color:var(--text);}
+.srt-num-box input[type=number]:focus{outline:none;border-color:var(--accent);}
+.srt-num-unit{font-size:12px;color:var(--muted);font-weight:600;}
+.srt-fps-row{display:flex;gap:8px;}
+.srt-fps-btn{flex:1;padding:10px;border:2px solid var(--border2);border-radius:8px;background:var(--surface);font-weight:700;font-size:14px;cursor:pointer;transition:all .15s;color:var(--text);}
+.srt-fps-btn:hover{border-color:var(--accent);}
+.srt-fps-btn.active{background:var(--accent);border-color:var(--accent);color:#fff;}
+.srt-radio-row{display:flex;gap:16px;}
+.srt-radio-opt{display:flex;align-items:center;gap:6px;font-size:13px;font-weight:600;color:var(--text);cursor:pointer;}
+.srt-radio-opt input{width:auto;margin:0;}
 </style>
 </head>
 <body>
@@ -369,6 +413,7 @@ header{background:var(--surface);border-bottom:2px solid var(--border);padding:0
     <button class="mtab on" onclick="switchTab('news',this)">📰 뉴스 피드</button>
     <button class="mtab" onclick="switchTab('funfact',this)">💡 Fun Facts</button>
     <button class="mtab" onclick="switchTab('steam',this)">🎮 스팀 에셋 가져오기</button>
+    <button class="mtab" onclick="switchTab('srt',this)">📝 자막 생성</button>
   </div>
   <div style="display:flex;">
     <button class="mtab" onclick="switchTab('bookmarks',this)">🔖 북마크 <span class="tab-badge" id="bm-badge"></span></button>
@@ -546,6 +591,92 @@ header{background:var(--surface);border-bottom:2px solid var(--border);padding:0
     </div>
   </div>
 
+  <!-- ══ SRT GENERATOR TAB ══ -->
+  <div id="tab-srt" style="display:none;">
+    <div class="srt-panel">
+      <div class="srt-panel-title">① ElevenLabs API 키 (최초 1회만)</div>
+      <div class="srt-panel-desc">한 번 저장하면 다시 입력할 필요 없어요. Forced Alignment 권한이 켜진 키를 사용하세요.</div>
+      <div class="srt-row">
+        <div><input type="password" class="srt-input" id="srt-k-el" placeholder="sk_..."></div>
+        <button class="btn btn-primary btn-sm" onclick="srtSaveKey()">저장</button>
+      </div>
+      <div class="srt-hint" id="srt-key-saved-hint" style="display:none;color:var(--green);font-weight:600;">✓ 저장된 키를 사용 중이에요</div>
+    </div>
+
+    <div class="srt-panel">
+      <div class="srt-panel-title">② 오디오 파일</div>
+      <div class="srt-panel-desc">TTS로 생성한 음성 파일을 올려주세요. 드래그&드롭도 가능해요.</div>
+      <label class="srt-filebox" id="srt-audio-box" for="srt-audio-input">
+        <input type="file" id="srt-audio-input" accept="audio/*" onchange="srtOnAudioChange()">
+        <div class="srt-filebox-icon">🎵</div>
+        <div class="srt-filebox-label" id="srt-audio-label">여기로 파일을 드래그하거나 클릭해서 선택</div>
+        <div class="srt-filebox-sub">mp3, wav, m4a 등</div>
+      </label>
+    </div>
+
+    <div class="srt-panel">
+      <div class="srt-panel-title">③ 스크립트 텍스트 (영어)</div>
+      <div class="srt-panel-desc">TTS 생성에 쓴 풀스크립트 그대로 붙여넣으세요. <b>emotion 태그나 [대괄호] 지시어는 미리 빼주세요.</b></div>
+      <textarea class="srt-textarea" id="srt-script-input" placeholder="여기에 정확한 풀스크립트를 붙여넣으세요..." oninput="srtCheckReady()"></textarea>
+    </div>
+
+    <div class="srt-panel">
+      <div class="srt-panel-title">④ 캡션 설정</div>
+      <div class="srt-panel-desc">Premiere의 [대본으로 캡션 만들기] 설정창과 동일한 항목이에요.</div>
+
+      <div class="srt-field">
+        <label class="srt-label">최대 길이 (자) — 한 줄 기준</label>
+        <div class="srt-slider-row">
+          <input type="range" id="srt-max-chars-slider" min="7" max="72" step="1" value="7">
+          <div class="srt-num-box"><input type="number" id="srt-max-chars-num" min="7" max="72" step="1" value="7"><span class="srt-num-unit">자</span></div>
+        </div>
+      </div>
+
+      <div class="srt-field">
+        <label class="srt-label">최소 기간 (초)</label>
+        <div class="srt-slider-row">
+          <input type="range" id="srt-min-dur-slider" min="1.2" max="6.0" step="0.1" value="1.2">
+          <div class="srt-num-box"><input type="number" id="srt-min-dur-num" min="1.2" max="6.0" step="0.1" value="1.2"><span class="srt-num-unit">초</span></div>
+        </div>
+      </div>
+
+      <div class="srt-field">
+        <label class="srt-label">캡션 사이의 간격 (프레임)</label>
+        <div class="srt-slider-row">
+          <input type="range" id="srt-gap-slider" min="0" max="10" step="1" value="0">
+          <div class="srt-num-box"><input type="number" id="srt-gap-num" min="0" max="10" step="1" value="0"><span class="srt-num-unit">프레임</span></div>
+        </div>
+      </div>
+
+      <div class="srt-field">
+        <label class="srt-label">영상 프레임레이트 (fps)</label>
+        <div class="srt-fps-row">
+          <button class="srt-fps-btn" data-fps="30" onclick="srtSetFps(30, this)">30</button>
+          <button class="srt-fps-btn active" data-fps="29.97" onclick="srtSetFps(29.97, this)">29.97</button>
+          <button class="srt-fps-btn" data-fps="24" onclick="srtSetFps(24, this)">24</button>
+        </div>
+      </div>
+
+      <div class="srt-field">
+        <label class="srt-label">한 줄 / 두 줄</label>
+        <div class="srt-radio-row">
+          <label class="srt-radio-opt"><input type="radio" name="srt-line-mode" value="one"> 한 줄</label>
+          <label class="srt-radio-opt"><input type="radio" name="srt-line-mode" value="two" checked> 두 줄</label>
+        </div>
+      </div>
+
+      <div class="srt-hint">자막 블록은 음성의 자연스러운 침묵(0.6초, 문장 끝은 0.3초)과 최대 길이 기준으로 나뉘어요. 음성-자막 싱크는 항상 단어 단위 타임스탬프 그대로 유지돼요.</div>
+    </div>
+
+    <div class="srt-panel">
+      <div class="srt-panel-title">⑤ 생성 &amp; 다운로드</div>
+      <button class="btn btn-primary" id="srt-gen-btn" disabled onclick="srtGenerate()" style="width:100%;">SRT 생성</button>
+      <div style="height:10px;"></div>
+      <button class="btn" id="srt-dl-btn" disabled onclick="srtDownload()" style="width:100%;background:var(--green);border-color:var(--green);color:#fff;">⬇ SRT 다운로드</button>
+      <div class="srt-status" id="srt-status-box"></div>
+    </div>
+  </div>
+
 </div>
 
 <script>
@@ -607,7 +738,7 @@ let bmFilter = 'all';
 function switchTab(tab, el) {
   document.querySelectorAll('.mtab').forEach(t => t.classList.remove('on'));
   el.classList.add('on');
-  ['news','funfact','steam','bookmarks','saved'].forEach(t => {
+  ['news','funfact','steam','bookmarks','saved','srt'].forEach(t => {
     document.getElementById('tab-' + t).style.display = t === tab ? '' : 'none';
   });
   if (tab === 'bookmarks') renderBookmarks();
@@ -1902,6 +2033,303 @@ function steamCopyCmd(id, btn){
 function steamCopyUrls(arr, btn){
   navigator.clipboard.writeText(arr.join('\n')).then(() => { const o = btn.textContent; btn.textContent = '복사됨 ✓'; btn.classList.add('copied'); setTimeout(() => { btn.textContent = o; btn.classList.remove('copied'); }, 1400); });
 }
+
+// ══ SRT GENERATOR TAB (srt-prefixed, isolated from rest of board) ══
+let srtAudioFile = null;
+let srtLastSRT = null;
+let srtLastFilename = 'subtitles.srt';
+let srtCurrentFps = 29.97;
+
+function srtInitKey() {
+  const saved = localStorage.getItem('px_elevenlabs') || '';
+  if (saved) {
+    document.getElementById('srt-k-el').value = saved;
+    document.getElementById('srt-key-saved-hint').style.display = '';
+  }
+}
+function srtSaveKey() {
+  const v = document.getElementById('srt-k-el').value.trim();
+  if (!v) return;
+  localStorage.setItem('px_elevenlabs', v);
+  document.getElementById('srt-key-saved-hint').style.display = '';
+  srtCheckReady();
+}
+
+function srtSetAudioFile(file) {
+  srtAudioFile = file || null;
+  const label = document.getElementById('srt-audio-label');
+  const sub = document.querySelector('#tab-srt .srt-filebox-sub');
+  const box = document.getElementById('srt-audio-box');
+  if (srtAudioFile) {
+    label.textContent = '✓ ' + srtAudioFile.name;
+    label.classList.add('has-file');
+    box.classList.add('has-file');
+    sub.textContent = (srtAudioFile.size / 1024 / 1024).toFixed(1) + ' MB';
+  } else {
+    label.textContent = '여기로 파일을 드래그하거나 클릭해서 선택';
+    label.classList.remove('has-file');
+    box.classList.remove('has-file');
+    sub.textContent = 'mp3, wav, m4a 등';
+  }
+  srtCheckReady();
+}
+function srtOnAudioChange() {
+  srtSetAudioFile(document.getElementById('srt-audio-input').files[0]);
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+  const box = document.getElementById('srt-audio-box');
+  if (!box) return;
+  ['dragenter','dragover'].forEach(evt => {
+    box.addEventListener(evt, e => { e.preventDefault(); e.stopPropagation(); box.classList.add('dragover'); });
+  });
+  ['dragleave','dragend'].forEach(evt => {
+    box.addEventListener(evt, e => { e.preventDefault(); e.stopPropagation(); box.classList.remove('dragover'); });
+  });
+  box.addEventListener('drop', e => {
+    e.preventDefault(); e.stopPropagation();
+    box.classList.remove('dragover');
+    const file = e.dataTransfer.files && e.dataTransfer.files[0];
+    if (file) {
+      if (!file.type.startsWith('audio/')) {
+        srtShowStatus('err', '오디오 파일이 아닌 것 같아요 (' + (file.type || '알 수 없는 형식') + '). 오디오 파일을 올려주세요.');
+        return;
+      }
+      document.getElementById('srt-audio-input').files = e.dataTransfer.files;
+      srtSetAudioFile(file);
+    }
+  });
+});
+
+function srtBindPair(sliderId, numId, min, max, decimals) {
+  const slider = document.getElementById(sliderId);
+  const num = document.getElementById(numId);
+  function fmt(v) { return decimals > 0 ? v.toFixed(decimals) : String(Math.round(v)); }
+  slider.addEventListener('input', () => {
+    num.value = fmt(parseFloat(slider.value));
+    srtCheckReady();
+  });
+  function commitNumber() {
+    let v = parseFloat(num.value);
+    if (isNaN(v)) v = min;
+    v = Math.min(max, Math.max(min, v));
+    v = parseFloat(v.toFixed(Math.max(decimals, 0)));
+    num.value = fmt(v);
+    slider.value = v;
+    srtCheckReady();
+  }
+  num.addEventListener('change', commitNumber);
+  num.addEventListener('blur', commitNumber);
+  num.addEventListener('keydown', e => { if (e.key === 'Enter') { commitNumber(); num.blur(); } });
+}
+document.addEventListener('DOMContentLoaded', function() {
+  if (!document.getElementById('srt-max-chars-slider')) return;
+  srtBindPair('srt-max-chars-slider', 'srt-max-chars-num', 7, 72, 0);
+  srtBindPair('srt-min-dur-slider', 'srt-min-dur-num', 1.2, 6.0, 1);
+  srtBindPair('srt-gap-slider', 'srt-gap-num', 0, 10, 0);
+});
+
+function srtSetFps(v, btn) {
+  srtCurrentFps = v;
+  document.querySelectorAll('.srt-fps-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+}
+
+function srtCheckReady() {
+  const key = localStorage.getItem('px_elevenlabs') || document.getElementById('srt-k-el').value.trim();
+  const script = document.getElementById('srt-script-input').value.trim();
+  document.getElementById('srt-gen-btn').disabled = !(key && srtAudioFile && script.length > 0);
+}
+
+function srtShowStatus(type, msg) {
+  const box = document.getElementById('srt-status-box');
+  box.className = 'srt-status show ' + type;
+  box.innerHTML = msg;
+}
+
+function srtFriendlyError(err, status) {
+  if (status === 401) return '키가 잘못됐거나 Forced Alignment 권한이 꺼져 있어요. ElevenLabs 대시보드에서 권한을 확인하세요.';
+  if (status === 422) return '오디오와 스크립트 내용이 안 맞는 것 같아요. emotion 태그를 지웠는지, 오디오 파일이 맞는지 확인하세요.';
+  if (status === 429) return '요청이 너무 잦아요. 잠시 후 다시 시도하세요.';
+  if (status) return 'API 오류 (상태 코드 ' + status + '). 잠시 후 다시 시도하세요.';
+  if (err && err.message && err.message.includes('Failed to fetch')) {
+    return '연결할 수 없어요. 페이지가 실제 웹 주소(http:// 또는 https://)로 열려있는지 확인하세요.';
+  }
+  return '알 수 없는 오류: ' + (err ? err.message : '');
+}
+
+async function srtGenerate() {
+  const key = localStorage.getItem('px_elevenlabs') || document.getElementById('srt-k-el').value.trim();
+  const script = document.getElementById('srt-script-input').value.trim();
+  if (!key || !srtAudioFile || !script) return;
+
+  const btn = document.getElementById('srt-gen-btn');
+  btn.disabled = true;
+  btn.textContent = '생성 중...';
+  document.getElementById('srt-dl-btn').disabled = true;
+  srtShowStatus('info', '오디오와 스크립트를 분석하고 있어요...');
+
+  try {
+    const form = new FormData();
+    form.append('file', srtAudioFile);
+    form.append('text', script);
+
+    const res = await fetch('https://api.elevenlabs.io/v1/forced-alignment', {
+      method: 'POST',
+      headers: { 'xi-api-key': key },
+      body: form
+    });
+
+    if (!res.ok) {
+      let detail = '';
+      try { const j = await res.json(); detail = j.detail ? (typeof j.detail === 'string' ? j.detail : JSON.stringify(j.detail)) : ''; } catch(e){}
+      srtShowStatus('err', srtFriendlyError(null, res.status) + (detail ? '<br><span style="opacity:.7">' + detail + '</span>' : ''));
+      btn.textContent = 'SRT 생성';
+      btn.disabled = false;
+      return;
+    }
+
+    const data = await res.json();
+    const words = (data.words || []).filter(w => w.text && w.text.trim().length > 0);
+    if (!words.length) {
+      srtShowStatus('err', '타이밍 정보를 받았는데 단어가 없어요. 스크립트 내용을 확인하세요.');
+      btn.textContent = 'SRT 생성';
+      btn.disabled = false;
+      return;
+    }
+
+    const maxChars = parseInt(document.getElementById('srt-max-chars-num').value, 10) || 7;
+    const minDuration = parseFloat(document.getElementById('srt-min-dur-num').value) || 1.2;
+    const gapFrames = parseFloat(document.getElementById('srt-gap-num').value) || 0;
+    const fps = srtCurrentFps;
+    const lineMode = document.querySelector('input[name="srt-line-mode"]:checked').value;
+
+    let blocks = srtBuildBlocks(words, maxChars, lineMode);
+    blocks = srtApplyTimingRules(blocks, minDuration, gapFrames, fps);
+    srtLastSRT = srtBlocksToSRT(blocks, maxChars, lineMode);
+    srtLastFilename = (srtAudioFile.name.replace(/\.[^/.]+$/, '') || 'subtitles') + '.srt';
+
+    srtShowStatus('ok', '완료! 단어 ' + words.length + '개, 자막 ' + blocks.length + '블록 생성됨. 평균 신뢰도(loss): ' + (data.loss !== undefined ? data.loss.toFixed(3) : '—') + ' (낮을수록 정확). 다운로드 버튼을 눌러주세요.');
+    document.getElementById('srt-dl-btn').disabled = false;
+  } catch (err) {
+    srtShowStatus('err', srtFriendlyError(err));
+  } finally {
+    btn.textContent = 'SRT 생성';
+    btn.disabled = false;
+  }
+}
+
+function srtFmtTime(sec) {
+  const h = Math.floor(sec / 3600);
+  const m = Math.floor((sec % 3600) / 60);
+  const s = Math.floor(sec % 60);
+  const ms = Math.round((sec - Math.floor(sec)) * 1000);
+  const pad = (n, len) => String(n).padStart(len, '0');
+  return pad(h,2) + ':' + pad(m,2) + ':' + pad(s,2) + ',' + pad(ms,3);
+}
+
+// Group words into caption blocks using: natural silence (>0.6s), a shorter
+// silence after sentence-ending punctuation (>0.3s, catches real sentence
+// breaks while leaving mid-sentence "TV?" or "DOOM!" untouched since TTS
+// barely pauses there), and max-length cap (1x line for one-line mode, 2x for
+// two-line mode).
+function srtBuildBlocks(words, maxChars, lineMode) {
+  const PAUSE_BREAK = 0.6;
+  const SENTENCE_PAUSE_BREAK = 0.3;
+  const lengthCap = lineMode === 'one' ? maxChars : maxChars * 2;
+  const blocks = [];
+  let current = [];
+
+  function currentText(arr) { return arr.map(w => w.text).join(' '); }
+
+  for (let i = 0; i < words.length; i++) {
+    const w = words[i];
+    const tentative = current.concat([w]);
+    const tentativeText = currentText(tentative);
+    const tooLong = tentativeText.length > lengthCap;
+
+    let bigPause = false;
+    if (current.length > 0) {
+      const gap = w.start - current[current.length - 1].end;
+      const prevEndsSentence = /[.!?]["')\]]*$/.test(current[current.length - 1].text);
+      bigPause = prevEndsSentence ? (gap > SENTENCE_PAUSE_BREAK) : (gap > PAUSE_BREAK);
+    }
+
+    if (tooLong || bigPause) {
+      if (current.length) blocks.push(current);
+      current = [w];
+    } else {
+      current.push(w);
+    }
+  }
+  if (current.length) blocks.push(current);
+
+  return blocks.map(words => ({
+    words,
+    start: words[0].start,
+    end: words[words.length - 1].end
+  }));
+}
+
+// Enforce minimum duration and minimum gap between captions (display
+// timing only — never touches the underlying word timestamps).
+function srtApplyTimingRules(blocks, minDuration, gapFrames, fps) {
+  const gapSeconds = fps > 0 ? gapFrames / fps : 0;
+  for (let i = 0; i < blocks.length; i++) {
+    const b = blocks[i];
+    let displayEnd = Math.max(b.end, b.start + minDuration);
+    if (i < blocks.length - 1) {
+      const nextStart = blocks[i + 1].start;
+      const maxAllowed = Math.max(nextStart - gapSeconds, b.start + 0.05);
+      displayEnd = Math.min(displayEnd, maxAllowed);
+    }
+    b.displayEnd = Math.max(displayEnd, b.start + 0.05);
+  }
+  return blocks;
+}
+
+function srtWrapLine(text, maxChars, lineMode) {
+  if (lineMode === 'one' || text.length <= maxChars) return [text];
+  const words = text.split(' ');
+  let line1 = '', line2 = '';
+  for (const w of words) {
+    if ((line1 + ' ' + w).trim().length <= maxChars && !line2) {
+      line1 = (line1 + ' ' + w).trim();
+    } else {
+      line2 = (line2 + ' ' + w).trim();
+    }
+  }
+  return line2 ? [line1, line2] : [line1];
+}
+
+function srtBlocksToSRT(blocks, maxChars, lineMode) {
+  let srt = '';
+  blocks.forEach((block, idx) => {
+    const text = block.words.map(w => w.text).join(' ');
+    const lines = srtWrapLine(text, maxChars, lineMode);
+    srt += (idx + 1) + '\n' + srtFmtTime(block.start) + ' --> ' + srtFmtTime(block.displayEnd) + '\n' + lines.join('\n') + '\n\n';
+  });
+  return srt;
+}
+
+function srtDownload() {
+  if (!srtLastSRT) return;
+  const blob = new Blob([srtLastSRT], { type: 'text/plain;charset=utf-8' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = srtLastFilename;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  setTimeout(() => URL.revokeObjectURL(a.href), 4000);
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+  const k = document.getElementById('srt-k-el');
+  if (k) k.addEventListener('input', srtCheckReady);
+  srtInitKey();
+  srtCheckReady();
+});
 
 // ── INIT ──
 initKeys();
