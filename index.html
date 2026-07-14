@@ -363,6 +363,29 @@ header{background:var(--surface);border-bottom:2px solid var(--border);padding:0
 .srt-radio-row{display:flex;gap:16px;}
 .srt-radio-opt{display:flex;align-items:center;gap:6px;font-size:13px;font-weight:600;color:var(--text);cursor:pointer;}
 .srt-radio-opt input{width:auto;margin:0;}
+
+/* ══ LEDY EXPRESSION MOV (ledy- prefixed, isolated) ══ */
+.ledy-toggle{background:none;border:none;padding:0;font-family:'Plus Jakarta Sans',sans-serif;font-size:13px;font-weight:700;color:var(--muted);cursor:pointer;display:flex;align-items:center;gap:6px;margin-bottom:10px;}
+.ledy-toggle:hover{color:var(--accent);}
+.ledy-toggle .ledy-caret{transition:transform .15s;display:inline-block;}
+.ledy-toggle.open .ledy-caret{transform:rotate(90deg);}
+.ledy-fold{display:none;padding:14px 16px;background:var(--surface2);border:2px solid var(--border);border-radius:10px;margin-bottom:18px;}
+.ledy-fold.open{display:block;}
+.ledy-prompt{width:100%;min-height:220px;padding:12px 14px;border:2px solid var(--border2);border-radius:8px;font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12px;line-height:1.6;color:var(--text);background:var(--surface);resize:vertical;}
+.ledy-prompt:focus{outline:none;border-color:var(--accent);}
+.ledy-fold-footer{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-top:10px;}
+.ledy-contract{font-size:11px;color:var(--dim);line-height:1.5;flex:1;}
+.ledy-cues{margin-top:16px;border:2px solid var(--border);border-radius:10px;overflow:hidden;display:none;}
+.ledy-cues.show{display:block;}
+.ledy-cue{display:flex;align-items:center;gap:10px;padding:9px 12px;border-bottom:1px solid var(--border);background:var(--surface);}
+.ledy-cue:last-child{border-bottom:none;}
+.ledy-cue-t{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:11px;font-weight:700;color:var(--accent);flex-shrink:0;width:52px;}
+.ledy-cue-play{background:none;border:none;cursor:pointer;font-size:13px;padding:0 2px;flex-shrink:0;opacity:.55;}
+.ledy-cue-play:hover{opacity:1;}
+.ledy-cue-txt{flex:1;font-size:13px;color:var(--text);line-height:1.4;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.ledy-cue-sel{flex-shrink:0;padding:5px 8px;border:2px solid var(--border2);border-radius:6px;background:var(--surface2);font-family:'Plus Jakarta Sans',sans-serif;font-size:12px;font-weight:700;color:var(--text);cursor:pointer;}
+.ledy-cue-sel:focus{outline:none;border-color:var(--accent);}
+.ledy-cues-hdr{padding:10px 12px;background:var(--surface2);border-bottom:2px solid var(--border);font-size:12px;font-weight:700;color:var(--muted);display:flex;justify-content:space-between;align-items:center;}
 </style>
 </head>
 <body>
@@ -674,6 +697,48 @@ header{background:var(--surface);border-bottom:2px solid var(--border);padding:0
       <div style="height:10px;"></div>
       <button class="btn" id="srt-dl-btn" disabled onclick="srtDownload()" style="width:100%;background:var(--green);border-color:var(--green);color:#fff;">⬇ SRT 다운로드</button>
       <div class="srt-status" id="srt-status-box"></div>
+    </div>
+
+    <div class="srt-panel">
+      <div class="srt-panel-title">⑥ Ledy 표정 MOV</div>
+      <div class="srt-panel-desc">SRT를 먼저 생성한 뒤 사용하세요. 문장별로 Ledy 표정을 배치하고, 투명 배경 MOV를 만드는 <b>.bat 파일</b>을 내려받습니다. 표정 PNG가 있는 폴더에 넣고 더블클릭하면 끝이에요.</div>
+
+      <button class="ledy-toggle" id="ledy-toggle" onclick="ledyToggleFold()"><span class="ledy-caret">▸</span> 감정 배치 프롬프트</button>
+      <div class="ledy-fold" id="ledy-fold">
+        <textarea class="ledy-prompt" id="ledy-prompt-input" oninput="ledySavePrompt()"></textarea>
+        <div class="ledy-fold-footer">
+          <div class="ledy-contract">ℹ 출력 형식(JSON 배열 · 길이 일치)은 자동으로 덧붙습니다. 감정 사전과 배치 규칙만 작성하세요.</div>
+          <button class="btn btn-sm" onclick="ledyResetPrompt()" style="flex-shrink:0;">기본값으로 되돌리기</button>
+        </div>
+      </div>
+
+      <div class="srt-field">
+        <label class="srt-label">표정 최소 유지 시간 (초)</label>
+        <div class="srt-slider-row">
+          <input type="range" id="ledy-hold-slider" min="1.0" max="6.0" step="0.1" value="2.0">
+          <div class="srt-num-box"><input type="number" id="ledy-hold-num" min="1.0" max="6.0" step="0.1" value="2.0"><span class="srt-num-unit">초</span></div>
+        </div>
+        <div class="srt-hint">이 시간보다 짧은 문장은 다음 문장과 합쳐져요. 값이 클수록 표정이 덜 바뀝니다.</div>
+      </div>
+
+      <div class="srt-field">
+        <label class="srt-label">MOV 가로 해상도 (px)</label>
+        <div class="srt-slider-row">
+          <input type="range" id="ledy-res-slider" min="200" max="1000" step="50" value="500">
+          <div class="srt-num-box"><input type="number" id="ledy-res-num" min="200" max="1000" step="50" value="500"><span class="srt-num-unit">px</span></div>
+        </div>
+        <div class="srt-hint">세로는 원본 비율로 자동 계산돼요. 화면에 표시할 크기의 1.5배 정도를 권장합니다.</div>
+      </div>
+
+      <button class="btn btn-primary" id="ledy-gen-btn" disabled onclick="ledyGenerate()" style="width:100%;">표정 생성</button>
+      <div style="height:10px;"></div>
+      <button class="btn" id="ledy-dl-btn" disabled onclick="ledyDownload()" style="width:100%;background:var(--green);border-color:var(--green);color:#fff;">⬇ 표정 다운로드 (.bat)</button>
+      <div class="srt-status" id="ledy-status-box"></div>
+
+      <div class="ledy-cues" id="ledy-cues">
+        <div class="ledy-cues-hdr"><span>문장별 표정 (직접 수정 가능)</span><span id="ledy-cue-count"></span></div>
+        <div id="ledy-cue-list"></div>
+      </div>
     </div>
   </div>
 
@@ -2037,6 +2102,8 @@ function steamCopyUrls(arr, btn){
 // ══ SRT GENERATOR TAB (srt-prefixed, isolated from rest of board) ══
 let srtAudioFile = null;
 let srtLastSRT = null;
+let srtLastWords = null;
+let srtAudioDuration = 0;
 let srtLastFilename = 'subtitles.srt';
 let srtCurrentFps = 29.97;
 
@@ -2057,6 +2124,9 @@ function srtSaveKey() {
 
 function srtSetAudioFile(file) {
   srtAudioFile = file || null;
+  srtLastWords = null;
+  srtAudioDuration = 0;
+  ledyReset();
   const label = document.getElementById('srt-audio-label');
   const sub = document.querySelector('#tab-srt .srt-filebox-sub');
   const box = document.getElementById('srt-audio-box');
@@ -2065,6 +2135,7 @@ function srtSetAudioFile(file) {
     label.classList.add('has-file');
     box.classList.add('has-file');
     sub.textContent = (srtAudioFile.size / 1024 / 1024).toFixed(1) + ' MB';
+    ledyReadAudioDuration(srtAudioFile);
   } else {
     label.textContent = '여기로 파일을 드래그하거나 클릭해서 선택';
     label.classList.remove('has-file');
@@ -2209,6 +2280,9 @@ async function srtGenerate() {
     srtLastSRT = srtBlocksToSRT(blocks, maxChars, lineMode);
     srtLastFilename = (srtAudioFile.name.replace(/\.[^/.]+$/, '') || 'subtitles') + '.srt';
 
+    srtLastWords = words;
+    ledyOnWordsReady();
+
     srtShowStatus('ok', '완료! 단어 ' + words.length + '개, 자막 ' + blocks.length + '블록 생성됨. 평균 신뢰도(loss): ' + (data.loss !== undefined ? data.loss.toFixed(3) : '—') + ' (낮을수록 정확). 다운로드 버튼을 눌러주세요.');
     document.getElementById('srt-dl-btn').disabled = false;
   } catch (err) {
@@ -2323,6 +2397,345 @@ function srtDownload() {
   a.remove();
   setTimeout(() => URL.revokeObjectURL(a.href), 4000);
 }
+
+// ══ LEDY EXPRESSION MOV (ledy-prefixed, isolated) ══
+
+// Emotion key -> PNG filename variants. AI only ever returns the key;
+// the variant (_1/_2/_3) is chosen by code so repeats don't show the same frame.
+const LEDY_FILES = {
+  normal:   ['normal_1'],
+  happy:    ['happy_1'],
+  laugh:    ['laugh_1'],
+  amazed:   ['amazed_1'],
+  surprise: ['surprise_1'],
+  curious:  ['curious_1'],
+  confused: ['confused_1'],
+  smirk:    ['smirk_1'],
+  grumpy:   ['grumpy_1', 'grumpy_2'],
+  boring:   ['boring_1'],
+  stare:    ['stare_1'],
+  sad:      ['sad_1', 'sad_2', 'sad_3'],
+  damaged:  ['damaged_1'],
+  love:     ['love_1'],
+  shy:      ['shy_1'],
+  goofy:    ['goofy_1'],
+  secret:   ['secret_1'],
+  hi:       ['hi_1']
+};
+const LEDY_KEYS = Object.keys(LEDY_FILES);
+
+const LEDY_DEFAULT_PROMPT = `You assign a facial expression to each line of a short-form video script.
+The speaker is Ledy, a chibi mascot who reacts to what she is saying.
+
+EMOTION DICTIONARY — pick exactly one key per line:
+
+normal    Completely neutral. Stating facts, listing information, transitions. THE DEFAULT.
+happy     Warm, fond, emotionally positive. Talking about something she genuinely likes.
+laugh     Bursting out laughing. Jokes, punchlines, big playful reactions.
+amazed    Awestruck. Huge scale, impressive feats, "I can't believe this exists" moments.
+surprise  Shock, a twist, a reveal. "But actually..." beats.
+curious   Wondering, thinking aloud. Asking a question.
+confused  Doesn't understand. Something makes no sense.
+smirk     Sly, teasing, mischievous. Sarcasm, sly brags, gentle mockery.
+grumpy    Displeased. Complaints, sharp criticism, calling something out.
+boring    Uninterested. Something predictable, tired, or dull.
+stare     Blank, deadpan stare. Disbelief, "seriously?", withholding judgment.
+sad       Downcast, disappointed, wistful.
+damaged   Beaten up, wrecked. After taking a hit, brutal difficulty.
+love      Smitten. Something she truly adores.
+shy       Embarrassed, bashful.
+goofy     Silly, dopey, ridiculous.
+secret    Whispering, sharing a secret, leaning in.
+hi        Greeting. Waving hello.
+
+PLACEMENT RULES:
+
+- Default to "normal". Only choose another key when the line clearly carries that emotion.
+- Roughly 40-60% of lines should be "normal" or "happy". Do not make every line expressive.
+- Never use the same key for more than 3 lines in a row.
+- "hi" only on the very first line, and only if it is an actual greeting.
+- "love", "secret", "damaged", "goofy", "shy", "confused" only when the context fits precisely.
+  Do not reach for them to add variety.
+- Judge each line on its own meaning, not on what would look fun.`;
+
+let ledyCues = [];
+let ledyAudioURL = null;
+let ledyAudioEl = null;
+
+function ledyReadAudioDuration(file) {
+  try {
+    if (ledyAudioURL) URL.revokeObjectURL(ledyAudioURL);
+    ledyAudioURL = URL.createObjectURL(file);
+    const a = new Audio();
+    a.preload = 'metadata';
+    a.onloadedmetadata = () => {
+      if (isFinite(a.duration)) srtAudioDuration = a.duration;
+    };
+    a.src = ledyAudioURL;
+    ledyAudioEl = a;
+  } catch (e) { /* duration is optional; last cue falls back to last word end */ }
+}
+
+function ledyReset() {
+  ledyCues = [];
+  const dl = document.getElementById('ledy-dl-btn');
+  const gen = document.getElementById('ledy-gen-btn');
+  const cues = document.getElementById('ledy-cues');
+  const status = document.getElementById('ledy-status-box');
+  if (dl) dl.disabled = true;
+  if (gen) gen.disabled = true;
+  if (cues) cues.classList.remove('show');
+  if (status) status.classList.remove('show');
+}
+
+function ledyOnWordsReady() {
+  ledyCues = [];
+  document.getElementById('ledy-gen-btn').disabled = false;
+  document.getElementById('ledy-dl-btn').disabled = true;
+  document.getElementById('ledy-cues').classList.remove('show');
+  document.getElementById('ledy-status-box').classList.remove('show');
+}
+
+function ledyShowStatus(type, msg) {
+  const box = document.getElementById('ledy-status-box');
+  box.className = 'srt-status show ' + type;
+  box.innerHTML = msg;
+}
+
+function ledyToggleFold() {
+  document.getElementById('ledy-fold').classList.toggle('open');
+  document.getElementById('ledy-toggle').classList.toggle('open');
+}
+
+function ledyGetPrompt() {
+  const saved = localStorage.getItem('px_ledy_prompt');
+  return (saved && saved.trim()) ? saved : LEDY_DEFAULT_PROMPT;
+}
+function ledySavePrompt() {
+  localStorage.setItem('px_ledy_prompt', document.getElementById('ledy-prompt-input').value);
+}
+function ledyResetPrompt() {
+  if (!confirm('감정 배치 프롬프트를 기본값으로 되돌릴까요? 지금 작성한 내용은 사라져요.')) return;
+  localStorage.removeItem('px_ledy_prompt');
+  document.getElementById('ledy-prompt-input').value = LEDY_DEFAULT_PROMPT;
+}
+
+// Group words into SENTENCES (not caption blocks — caption blocks are far too
+// short at maxChars=7 and would strobe the face). Sentences shorter than the
+// minimum hold get merged forward so no expression flashes by.
+function ledyBuildSentences(words, minHold) {
+  const raw = [];
+  let cur = [];
+  for (const w of words) {
+    cur.push(w);
+    if (/[.!?][")'\]]*$/.test(w.text)) { raw.push(cur); cur = []; }
+  }
+  if (cur.length) raw.push(cur);
+
+  const merged = [];
+  for (const s of raw) {
+    const start = s[0].start;
+    const end = s[s.length - 1].end;
+    const prev = merged[merged.length - 1];
+    if (prev && (end - prev.start) && (end - start) < minHold && (prev.end - prev.start) < minHold * 2) {
+      prev.words = prev.words.concat(s);
+      prev.end = end;
+      prev.text = prev.words.map(w => w.text).join(' ');
+    } else {
+      merged.push({ words: s, start, end, text: s.map(w => w.text).join(' ') });
+    }
+  }
+  // A final sentence that is still too short gets folded into the one before it.
+  if (merged.length > 1) {
+    const last = merged[merged.length - 1];
+    if (last.end - last.start < minHold) {
+      const prev = merged[merged.length - 2];
+      prev.words = prev.words.concat(last.words);
+      prev.end = last.end;
+      prev.text = prev.words.map(w => w.text).join(' ');
+      merged.pop();
+    }
+  }
+  return merged;
+}
+
+async function ledyGenerate() {
+  if (!srtLastWords || !srtLastWords.length) {
+    ledyShowStatus('err', 'SRT를 먼저 생성해주세요. 단어별 타임스탬프가 있어야 표정을 배치할 수 있어요.');
+    return;
+  }
+  if (!apiKey) { openModal(); return; }
+
+  const btn = document.getElementById('ledy-gen-btn');
+  btn.disabled = true;
+  btn.textContent = '배치 중...';
+  document.getElementById('ledy-dl-btn').disabled = true;
+  ledyShowStatus('info', '대본을 읽고 문장별 감정을 배치하고 있어요...');
+
+  const minHold = parseFloat(document.getElementById('ledy-hold-num').value) || 2.0;
+  const sentences = ledyBuildSentences(srtLastWords, minHold);
+
+  // The output contract is appended by code, never by the editable prompt.
+  // This way a prompt written in another session can't break the parser.
+  const system = ledyGetPrompt() + '\n\n' +
+    'Return ONLY a JSON array of strings. No other text, no markdown, no explanation.\n' +
+    'Each string must be one of: ' + LEDY_KEYS.join(', ') + '\n' +
+    'The array length must exactly match the number of input lines.';
+
+  const user = sentences.map((s, i) => (i + 1) + '. ' + s.text).join('\n');
+
+  let keys = null;
+  try {
+    const raw = await callClaude(system, user, 1200);
+    const m = raw.match(/\[[\s\S]*\]/);
+    if (m) {
+      const parsed = JSON.parse(m[0]);
+      if (Array.isArray(parsed) && parsed.length === sentences.length) keys = parsed;
+    }
+  } catch (err) {
+    ledyShowStatus('err', 'Claude 호출에 실패했어요: ' + (err.message || '알 수 없는 오류') + '<br><span style="opacity:.7">전부 normal로 채웠어요. 아래에서 직접 골라주세요.</span>');
+  }
+
+  // Never die on a bad prompt: fall back to all-normal and let the user fix it by hand.
+  let fellBack = false;
+  if (!keys) {
+    keys = sentences.map(() => 'normal');
+    fellBack = true;
+  }
+
+  ledyCues = sentences.map((s, i) => {
+    let k = String(keys[i] || '').toLowerCase().trim();
+    if (!LEDY_FILES[k]) k = 'normal';
+    return { start: s.start, end: s.end, text: s.text, key: k };
+  });
+
+  ledyRenderCues();
+  document.getElementById('ledy-dl-btn').disabled = false;
+  btn.textContent = '표정 생성';
+  btn.disabled = false;
+
+  if (!fellBack) {
+    ledyShowStatus('ok', '완료! 문장 ' + ledyCues.length + '개에 표정을 배치했어요. 아래에서 확인하고, 아니다 싶은 건 드롭다운으로 바꾸세요.');
+  } else if (!document.getElementById('ledy-status-box').classList.contains('err')) {
+    ledyShowStatus('err', '감정 배치에 실패했어요. 전부 normal로 채웠으니 프롬프트를 확인하거나 아래에서 직접 골라주세요.');
+  }
+}
+
+// Same emotion twice in a row would show the identical PNG and read as a frozen
+// frame, so variants cycle. Emotions with only one file are left alone.
+function ledyResolveFiles() {
+  const counters = {};
+  return ledyCues.map((c, i) => {
+    const variants = LEDY_FILES[c.key];
+    if (variants.length === 1) return variants[0];
+    const prev = ledyCues[i - 1];
+    if (prev && prev.key === c.key) {
+      counters[c.key] = ((counters[c.key] || 0) + 1) % variants.length;
+    } else {
+      counters[c.key] = counters[c.key] || 0;
+    }
+    return variants[counters[c.key]];
+  });
+}
+
+function ledyRenderCues() {
+  const list = document.getElementById('ledy-cue-list');
+  const files = ledyResolveFiles();
+  list.innerHTML = ledyCues.map((c, i) => {
+    const opts = LEDY_KEYS.map(k =>
+      '<option value="' + k + '"' + (k === c.key ? ' selected' : '') + '>' + k + '</option>'
+    ).join('');
+    const t = c.start.toFixed(2) + 's';
+    const txt = c.text.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+    return '<div class="ledy-cue">' +
+      '<span class="ledy-cue-t">' + t + '</span>' +
+      '<button class="ledy-cue-play" onclick="ledyPlay(' + i + ')" title="이 문장 듣기">▶</button>' +
+      '<span class="ledy-cue-txt" title="' + txt + '">' + txt + '</span>' +
+      '<select class="ledy-cue-sel" onchange="ledySetKey(' + i + ', this.value)">' + opts + '</select>' +
+      '</div>';
+  }).join('');
+  document.getElementById('ledy-cue-count').textContent = ledyCues.length + '컷 · ' + new Set(files).size + '종 사용';
+  document.getElementById('ledy-cues').classList.add('show');
+}
+
+function ledySetKey(i, key) {
+  ledyCues[i].key = key;
+  const files = ledyResolveFiles();
+  document.getElementById('ledy-cue-count').textContent = ledyCues.length + '컷 · ' + new Set(files).size + '종 사용';
+}
+
+function ledyPlay(i) {
+  if (!ledyAudioURL) return;
+  if (!ledyAudioEl) ledyAudioEl = new Audio(ledyAudioURL);
+  const c = ledyCues[i];
+  ledyAudioEl.currentTime = c.start;
+  ledyAudioEl.play();
+  const stopAt = c.end + 0.15;
+  const tick = () => {
+    if (ledyAudioEl.currentTime >= stopAt) { ledyAudioEl.pause(); return; }
+    if (!ledyAudioEl.paused) requestAnimationFrame(tick);
+  };
+  requestAnimationFrame(tick);
+}
+
+function ledyDownload() {
+  if (!ledyCues.length) return;
+
+  const width = parseInt(document.getElementById('ledy-res-num').value, 10) || 500;
+  const fps = srtCurrentFps || 30;
+  const files = ledyResolveFiles();
+
+  // Duration is next-cue-start minus this-cue-start, never this cue's own end.
+  // Using end times would leave gaps wherever the speaker pauses, and gaps punch
+  // holes in the MOV.
+  const tail = Math.max(srtAudioDuration || 0, ledyCues[ledyCues.length - 1].end);
+  const durations = ledyCues.map((c, i) => {
+    const next = (i < ledyCues.length - 1) ? ledyCues[i + 1].start : tail;
+    return Math.max(next - c.start, 0.1);
+  });
+
+  const lines = [];
+  lines.push('@echo off');
+  lines.push('cd /d "%~dp0"');
+  lines.push('');
+  lines.push('(');
+  lines.push('echo ffconcat version 1.0');
+  ledyCues.forEach((c, i) => {
+    lines.push("echo file '" + files[i] + ".png'");
+    lines.push('echo duration ' + durations[i].toFixed(3));
+  });
+  // concat demuxer drops the last entry's duration, so the final file is repeated.
+  lines.push("echo file '" + files[files.length - 1] + ".png'");
+  lines.push(') > _ledy_list.txt');
+  lines.push('');
+  lines.push('ffmpeg -y -f concat -safe 0 -i _ledy_list.txt -r ' + fps +
+    ' -vf scale=' + width + ':-2 -c:v prores_ks -profile:v 4444 -pix_fmt yuva444p10le ledy.mov');
+  lines.push('');
+  lines.push('del _ledy_list.txt');
+  lines.push('echo.');
+  lines.push('echo Done. ledy.mov created.');
+  lines.push('pause');
+
+  const bat = lines.join('\r\n') + '\r\n';
+  const base = srtAudioFile ? srtAudioFile.name.replace(/\.[^/.]+$/, '') : 'ledy';
+  const blob = new Blob([bat], { type: 'text/plain' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = base + '_ledy.bat';
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  setTimeout(() => URL.revokeObjectURL(a.href), 4000);
+
+  ledyShowStatus('ok', '.bat을 내려받았어요. <b>표정 PNG가 있는 폴더에 넣고 더블클릭</b>하면 같은 폴더에 ledy.mov가 생깁니다. (FFmpeg 설치 필요)');
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+  const p = document.getElementById('ledy-prompt-input');
+  if (p) p.value = ledyGetPrompt();
+  srtBindPair('ledy-hold-slider', 'ledy-hold-num', 1.0, 6.0, 1);
+  srtBindPair('ledy-res-slider', 'ledy-res-num', 200, 1000, 0);
+});
 
 document.addEventListener('DOMContentLoaded', function() {
   const k = document.getElementById('srt-k-el');
