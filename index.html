@@ -586,7 +586,12 @@ header{background:var(--surface);border-bottom:2px solid var(--border);padding:0
     <div class="saved-section">
       <div class="saved-hdr">
         <div class="sec-title">📦 <b>저장된 컨텐츠</b></div>
-        <button class="btn btn-sm btn-ghost" style="color:var(--red)" onclick="clearSavedContents()">전체 삭제</button>
+        <div style="display:flex;align-items:center;gap:8px;">
+          <button class="btn btn-sm" onclick="bkExport()" title="북마크 + 저장된 컨텐츠를 JSON 파일로 내보냅니다">⬇ 백업</button>
+          <button class="btn btn-sm" onclick="document.getElementById('bk-file').click()" title="백업 파일에서 복원합니다">⬆ 복원</button>
+          <input type="file" id="bk-file" accept=".json,application/json" style="display:none" onchange="bkImport(this)">
+          <button class="btn btn-sm btn-ghost" style="color:var(--red)" onclick="clearSavedContents()">전체 삭제</button>
+        </div>
       </div>
       <div id="saved-list"></div>
     </div>
@@ -847,12 +852,7 @@ function onFreeInput() {
   document.getElementById('free-gen-btn').disabled = len < 100;
 }
 
-async function generateFromFree() {
-  const text = document.getElementById('free-text').value.trim();
-  if (text.length < 100) return;
-  const fakeNews = { title_en: '직접 입력한 기사', title_kr: '직접 입력한 기사', desc: text, link: '', source: '직접 입력', pubDate: '' };
-  await generateContent(fakeNews, 'main');
-}
+// generateFromFree() lives in the CONTENT GENERATION section below.
 
 // ── RSS FETCH ──
 async function fetchRSS(feed) {
@@ -1665,6 +1665,69 @@ function closeContent() {
 }
 function closeContentBm() { document.getElementById('content-box-bm').classList.remove('show'); }
 
+// ── BACKUP (bk*) ──
+// API keys are deliberately excluded: a backup file that carries them becomes a
+// leak path, and re-entering a key is cheap. News cache is excluded too - it is
+// re-fetchable.
+const BK_KEYS = ['px_bookmarks', 'px_saved', 'px_ledy_prompt'];
+
+function bkCount(raw) {
+  try { const a = JSON.parse(raw); return Array.isArray(a) ? a.length : 0; } catch { return 0; }
+}
+
+function bkExport() {
+  const data = { app: 'PANAX_board', format: 1, exportedAt: new Date().toISOString() };
+  let any = false;
+  BK_KEYS.forEach(k => {
+    const v = localStorage.getItem(k);
+    if (v !== null) { data[k] = v; any = true; }
+  });
+  if (!any) { alert('내보낼 데이터가 없어요. 북마크나 저장된 컨텐츠가 아직 없습니다.'); return; }
+
+  const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'panax_board_backup_' + new Date().toISOString().slice(0, 10).replace(/-/g, '') + '.json';
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  setTimeout(() => URL.revokeObjectURL(a.href), 4000);
+}
+
+function bkImport(input) {
+  const file = input.files[0];
+  input.value = '';               // let the same file be picked again later
+  if (!file) return;
+
+  const reader = new FileReader();
+  reader.onerror = () => alert('파일을 읽지 못했어요.');
+  reader.onload = () => {
+    let data;
+    try { data = JSON.parse(reader.result); } catch { alert('백업 파일을 읽을 수 없어요. JSON 형식이 아닙니다.'); return; }
+    if (!data || data.app !== 'PANAX_board') { alert('PANAX Board 백업 파일이 아니에요.'); return; }
+
+    const found = BK_KEYS.filter(k => typeof data[k] === 'string');
+    if (!found.length) { alert('복원할 데이터가 없는 파일이에요.'); return; }
+
+    const msg = '복원하면 지금 저장된 내용을 덮어씁니다. 되돌릴 수 없어요.\n\n'
+      + '복원할 내용:\n'
+      + (found.includes('px_bookmarks') ? '· 북마크 ' + bkCount(data.px_bookmarks) + '개\n' : '')
+      + (found.includes('px_saved')     ? '· 저장된 컨텐츠 ' + bkCount(data.px_saved) + '개\n' : '')
+      + (found.includes('px_ledy_prompt') ? '· Ledy 감정 배치 프롬프트\n' : '')
+      + '\n진행할까요?';
+    if (!confirm(msg)) return;
+
+    try {
+      found.forEach(k => localStorage.setItem(k, data[k]));
+    } catch (e) {
+      alert('복원에 실패했어요. 브라우저 저장 공간이 부족할 수 있습니다.\n(' + e.name + ')');
+      return;
+    }
+    location.reload();            // simplest way to get every in-memory copy back in sync
+  };
+  reader.readAsText(file);
+}
+
 // ── FUN FACT ──
 const POPULAR_GAMES = [
   'The Legend of Zelda: Breath of the Wild',
@@ -2026,8 +2089,9 @@ function steamRender(json, id){
   const d = entry.data;
   let html = '';
 
-  // Fixed download folder + Windows-safe game name for yt-dlp filenames
-  const STEAM_DL_DIR = 'C:\\Users\\DT-0009\\Downloads';
+  // Download folder + Windows-safe game name for yt-dlp filenames.
+  // PowerShell expands $env:USERPROFILE, so the command works on any PC.
+  const STEAM_DL_DIR = '$env:USERPROFILE\\Downloads';
   const safeName = (d.name || 'steam_video').replace(/[\\/:*?"<>|]/g, '_').replace(/\s+/g, ' ').trim();
 
   // Game header
