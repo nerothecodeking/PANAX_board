@@ -129,7 +129,6 @@ header{background:var(--surface);border-bottom:2px solid var(--border);padding:0
 .pcard-hdr{display:flex;align-items:center;gap:10px;margin-bottom:14px;}
 .pname{font-family:'Syne',sans-serif;font-size:16px;font-weight:700;}
 .ptag{font-size:12px;color:var(--muted);}
-.pcard-hdr-right{margin-left:auto;}
 .copy-btn{font-size:12px;font-weight:700;padding:5px 12px;border-radius:6px;border:2px solid var(--border2);background:var(--surface);color:var(--muted);cursor:pointer;transition:all .15s;}
 .copy-btn:hover{background:var(--green-bg);border-color:var(--green);color:var(--green);}
 .copy-btn.copied{background:var(--green-bg);border-color:var(--green);color:var(--green);}
@@ -139,7 +138,6 @@ header{background:var(--surface);border-bottom:2px solid var(--border);padding:0
 .content-en{font-size:15px;line-height:1.8;color:var(--text);}
 .content-kr{font-size:13px;line-height:1.7;color:var(--muted);margin-top:4px;padding-left:12px;border-left:2px solid var(--border2);}
 .content-headline{font-family:'Syne',sans-serif;font-size:17px;font-weight:700;margin-bottom:10px;}
-.content-headline-kr{font-size:14px;color:var(--muted);font-weight:500;margin-bottom:14px;padding-left:12px;border-left:2px solid var(--border2);}
 .content-tagline{margin-top:12px;padding:10px 14px;background:var(--surface2);border-radius:8px;border-left:3px solid var(--accent);}
 .tagline-en{font-size:13px;font-weight:700;color:var(--accent);line-height:1.4;}
 .tagline-kr{font-size:12px;color:var(--muted);margin-top:3px;line-height:1.4;}
@@ -244,7 +242,6 @@ header{background:var(--surface);border-bottom:2px solid var(--border);padding:0
 .ff-cards{display:flex;flex-direction:column;gap:14px;}
 .ff-card{background:var(--surface2);border:2px solid var(--border);border-radius:10px;padding:18px;transition:border-color .15s;}
 .ff-card:hover{border-color:var(--accent);}
-.ff-card-hdr{display:flex;align-items:flex-start;justify-content:space-between;gap:10px;margin-bottom:10px;}
 .ff-game{font-size:11px;font-weight:700;color:var(--accent);text-transform:uppercase;letter-spacing:.06em;margin-bottom:4px;}
 .ff-title{font-size:16px;font-weight:700;line-height:1.35;margin-bottom:10px;}
 .ff-body{font-size:14px;line-height:1.7;color:var(--text);margin-bottom:12px;}
@@ -511,7 +508,7 @@ header{background:var(--surface);border-bottom:2px solid var(--border);padding:0
               <div class="content-source" id="content-source" style="font-size:12px;"></div>
             </div>
             <div class="content-actions">
-              <button class="btn btn-sm" onclick="saveCurrentContent()" id="save-btn-main">💾 저장</button>
+              <button class="btn btn-sm" onclick="saveCurrentContent('content-body','save-btn-main')" id="save-btn-main">💾 저장</button>
               <button class="btn btn-sm btn-ghost" onclick="closeContent()">✕</button>
             </div>
           </div>
@@ -525,38 +522,6 @@ header{background:var(--surface);border-bottom:2px solid var(--border);padding:0
       </div>
 
     </div><!-- end news-split -->
-  </div>
-
-  <!-- ══ BOOKMARKS TAB ══ -->
-  <div id="tab-bookmarks" style="display:none;">
-    <div class="bm-section">
-      <div class="bm-hdr">
-        <div class="sec-title">🔖 <b>북마크</b></div>
-        <div style="display:flex;align-items:center;gap:8px;">
-          <div style="display:flex;gap:4px;">
-            <button class="ftab on" id="bm-filter-all" onclick="setBmFilter('all',this)" style="font-size:11px;padding:4px 10px;">전체</button>
-            <button class="ftab" id="bm-filter-news" onclick="setBmFilter('news',this)" style="font-size:11px;padding:4px 10px;">📰 뉴스</button>
-            <button class="ftab" id="bm-filter-fact" onclick="setBmFilter('fact',this)" style="font-size:11px;padding:4px 10px;">💡 상식</button>
-          </div>
-          <button class="btn btn-sm btn-ghost" style="color:var(--red)" onclick="clearBookmarks()">전체 삭제</button>
-        </div>
-      </div>
-      <div id="bm-list"></div>
-    </div>
-    <!-- CONTENT OUTPUT (bookmarks) -->
-    <div class="content-box" id="content-box-bm">
-      <div class="content-hdr">
-        <div class="content-title-row">
-          <div class="content-title">📱 컨텐츠 생성 결과</div>
-          <div class="content-source" id="content-source-bm"></div>
-        </div>
-        <div class="content-actions">
-          <button class="btn btn-sm" onclick="saveCurrentContentBm()" id="save-btn-bm">💾 저장</button>
-          <button class="btn btn-sm btn-ghost" onclick="closeContentBm()">✕ 닫기</button>
-        </div>
-      </div>
-      <div id="content-body-bm"></div>
-    </div>
   </div>
 
   <!-- ══ FUN FACT TAB ══ -->
@@ -578,22 +543,6 @@ header{background:var(--surface);border-bottom:2px solid var(--border);padding:0
           게임 이름을 검색하거나 랜덤 버튼을 눌러보세요
         </div>
       </div>
-    </div>
-  </div>
-
-  <!-- ══ SAVED CONTENT TAB ══ -->
-  <div id="tab-saved" style="display:none;">
-    <div class="saved-section">
-      <div class="saved-hdr">
-        <div class="sec-title">📦 <b>저장된 컨텐츠</b></div>
-        <div style="display:flex;align-items:center;gap:8px;">
-          <button class="btn btn-sm" onclick="bkExport()" title="북마크 + 저장된 컨텐츠를 JSON 파일로 내보냅니다">⬇ 백업</button>
-          <button class="btn btn-sm" onclick="document.getElementById('bk-file').click()" title="백업 파일에서 복원합니다">⬆ 복원</button>
-          <input type="file" id="bk-file" accept=".json,application/json" style="display:none" onchange="bkImport(this)">
-          <button class="btn btn-sm btn-ghost" style="color:var(--red)" onclick="clearSavedContents()">전체 삭제</button>
-        </div>
-      </div>
-      <div id="saved-list"></div>
     </div>
   </div>
 
@@ -758,6 +707,54 @@ header{background:var(--surface);border-bottom:2px solid var(--border);padding:0
      </div>
     </div>
   </div>
+  <!-- ══ BOOKMARKS TAB ══ -->
+  <div id="tab-bookmarks" style="display:none;">
+    <div class="bm-section">
+      <div class="bm-hdr">
+        <div class="sec-title">🔖 <b>북마크</b></div>
+        <div style="display:flex;align-items:center;gap:8px;">
+          <div style="display:flex;gap:4px;">
+            <button class="ftab on" id="bm-filter-all" onclick="setBmFilter('all',this)" style="font-size:11px;padding:4px 10px;">전체</button>
+            <button class="ftab" id="bm-filter-news" onclick="setBmFilter('news',this)" style="font-size:11px;padding:4px 10px;">📰 뉴스</button>
+            <button class="ftab" id="bm-filter-fact" onclick="setBmFilter('fact',this)" style="font-size:11px;padding:4px 10px;">💡 상식</button>
+          </div>
+          <button class="btn btn-sm btn-ghost" style="color:var(--red)" onclick="clearBookmarks()">전체 삭제</button>
+        </div>
+      </div>
+      <div id="bm-list"></div>
+    </div>
+    <!-- CONTENT OUTPUT (bookmarks) -->
+    <div class="content-box" id="content-box-bm">
+      <div class="content-hdr">
+        <div class="content-title-row">
+          <div class="content-title">📱 컨텐츠 생성 결과</div>
+          <div class="content-source" id="content-source-bm"></div>
+        </div>
+        <div class="content-actions">
+          <button class="btn btn-sm" onclick="saveCurrentContent('content-body-bm','save-btn-bm')" id="save-btn-bm">💾 저장</button>
+          <button class="btn btn-sm btn-ghost" onclick="closeContentBm()">✕ 닫기</button>
+        </div>
+      </div>
+      <div id="content-body-bm"></div>
+    </div>
+  </div>
+
+  <!-- ══ SAVED CONTENT TAB ══ -->
+  <div id="tab-saved" style="display:none;">
+    <div class="saved-section">
+      <div class="saved-hdr">
+        <div class="sec-title">📦 <b>저장된 컨텐츠</b></div>
+        <div style="display:flex;align-items:center;gap:8px;">
+          <button class="btn btn-sm" onclick="bkExport()" title="북마크 + 저장된 컨텐츠를 JSON 파일로 내보냅니다">⬇ 백업</button>
+          <button class="btn btn-sm" onclick="document.getElementById('bk-file').click()" title="백업 파일에서 복원합니다">⬆ 복원</button>
+          <input type="file" id="bk-file" accept=".json,application/json" style="display:none" onchange="bkImport(this)">
+          <button class="btn btn-sm btn-ghost" style="color:var(--red)" onclick="clearSavedContents()">전체 삭제</button>
+        </div>
+      </div>
+      <div id="saved-list"></div>
+    </div>
+  </div>
+
 
 </div>
 
@@ -773,8 +770,8 @@ let bookmarks = JSON.parse(localStorage.getItem('px_bookmarks') || '[]');
 let savedContents = JSON.parse(localStorage.getItem('px_saved') || '[]');
 let activeFilter = 'all';
 let newsCache = JSON.parse(localStorage.getItem('px_news_cache') || 'null');
-let lastGeneratedContent = null;
-let lastGeneratedContentBm = null;
+const contentStore = {};   // bodyId -> { content, news, selectedHeadlineIdx, selectedPersona }
+let ffLast = null;         // last Fun Facts result: { data, url }
 
 const CATS = [
   { id:'release',     label:'🎮 릴리즈',   cls:'cb-release' },
@@ -820,8 +817,8 @@ let bmFilter = 'all';
 function switchTab(tab, el) {
   document.querySelectorAll('.mtab').forEach(t => t.classList.remove('on'));
   el.classList.add('on');
-  ['news','funfact','steam','bookmarks','saved','srt'].forEach(t => {
-    document.getElementById('tab-' + t).style.display = t === tab ? '' : 'none';
+  document.querySelectorAll('[id^="tab-"]').forEach(p => {
+    p.style.display = p.id === 'tab-' + tab ? '' : 'none';
   });
   if (tab === 'bookmarks') renderBookmarks();
   if (tab === 'saved') renderSavedList();
@@ -855,55 +852,45 @@ function onFreeInput() {
 // generateFromFree() lives in the CONTENT GENERATION section below.
 
 // ── RSS FETCH ──
+// rss2json first (it returns parsed items); the other two hand back raw XML.
 async function fetchRSS(feed) {
-  const proxies = [
-    url => `https://api.rss2json.com/v1/api.json?rss_url=${encodeURIComponent(url)}`,
-    url => `https://api.allorigins.win/get?url=${encodeURIComponent(url)}`,
-    url => `https://corsproxy.io/?${encodeURIComponent(url)}`
+  const item = (title, link, desc, pubDate) => ({
+    title: (title || '').trim(),
+    link:  (link || '').trim(),
+    desc:  (desc || '').replace(/<[^>]+>/g, '').replace(/\s+/g, ' ').substring(0, 400),
+    source: feed.name,
+    pubDate: pubDate || ''
+  });
+  const urls = [
+    'https://api.rss2json.com/v1/api.json?rss_url=' + encodeURIComponent(feed.url),
+    'https://api.allorigins.win/get?url=' + encodeURIComponent(feed.url),
+    'https://corsproxy.io/?' + encodeURIComponent(feed.url)
   ];
 
-  // Try rss2json first
-  try {
-    const res = await fetch(proxies[0](feed.url));
-    if (!res.ok) throw new Error('rss2json fail');
-    const data = await res.json();
-    if (data.status === 'ok' && data.items && data.items.length) {
-      return data.items.slice(0, 10).map(item => ({
-        title: (item.title || '').trim(),
-        link:  (item.link || '').trim(),
-        desc:  (item.description || item.content || '')
-                 .replace(/<[^>]+>/g, '').replace(/\s+/g, ' ').substring(0, 400),
-        source: feed.name,
-        pubDate: item.pubDate || ''
-      })).filter(i => i.title && i.link);
-    }
-  } catch {}
-
-  // Fallback proxies
-  for (let i = 1; i < proxies.length; i++) {
+  for (let i = 0; i < urls.length; i++) {
     try {
-      const res = await fetch(proxies[i](feed.url));
+      const res = await fetch(urls[i]);
       if (!res.ok) continue;
-      let xmlText = '';
-      if (proxies[i](feed.url).includes('allorigins')) {
+
+      if (i === 0) {
         const data = await res.json();
-        xmlText = data.contents || '';
-      } else {
-        xmlText = await res.text();
+        if (data.status !== 'ok' || !data.items || !data.items.length) continue;
+        return data.items.slice(0, 10)
+          .map(it => item(it.title, it.link, it.description || it.content, it.pubDate))
+          .filter(n => n.title && n.link);
       }
+
+      const xmlText = urls[i].includes('allorigins') ? (await res.json()).contents : await res.text();
       if (!xmlText) continue;
-      const parser = new DOMParser();
-      const doc = parser.parseFromString(xmlText, 'text/xml');
-      const items = [...doc.querySelectorAll('item, entry')];
-      if (!items.length) continue;
-      return items.slice(0, 10).map(item => {
-        const title   = item.querySelector('title')?.textContent?.trim() || '';
-        const link    = item.querySelector('link')?.textContent?.trim() || item.querySelector('link')?.getAttribute('href') || '';
-        const desc    = (item.querySelector('description, summary, content')?.textContent || '')
-                          .replace(/<[^>]+>/g, '').replace(/\s+/g, ' ').substring(0, 400);
-        const pubDate = item.querySelector('pubDate, published, updated')?.textContent?.trim() || '';
-        return { title, link, desc, source: feed.name, pubDate };
-      }).filter(i => i.title && i.link);
+      const doc = new DOMParser().parseFromString(xmlText, 'text/xml');
+      const entries = [...doc.querySelectorAll('item, entry')];
+      if (!entries.length) continue;
+      return entries.slice(0, 10).map(e => item(
+        e.querySelector('title')?.textContent,
+        e.querySelector('link')?.textContent?.trim() || e.querySelector('link')?.getAttribute('href'),
+        e.querySelector('description, summary, content')?.textContent,
+        e.querySelector('pubDate, published, updated')?.textContent?.trim()
+      )).filter(n => n.title && n.link);
     } catch {}
   }
   return [];
@@ -949,17 +936,19 @@ function clearNewsCache() {
   document.getElementById('cache-btn').style.display = 'none';
 }
 
+// Returns true when cached news was rendered, so callers can stop there.
+function loadCachedNews() {
+  if (!newsCache || !newsCache.data || !Object.keys(newsCache.data).length) return false;
+  newsData = newsCache.data;
+  renderNews();
+  document.getElementById('cache-btn').style.display = '';
+  showCacheInfo();
+  return true;
+}
+
 async function loadNews() {
   if (!apiKey) { openModal(); return; }
-
-  // Load from cache if available
-  if (newsCache && newsCache.data && Object.keys(newsCache.data).length) {
-    newsData = newsCache.data;
-    renderNews();
-    document.getElementById('cache-btn').style.display = '';
-    showCacheInfo();
-    return;
-  }
+  if (loadCachedNews()) return;
 
   const btn = document.getElementById('news-btn');
   btn.disabled = true;
@@ -1036,12 +1025,19 @@ Respond ONLY as valid JSON, no extra text:
   btn.disabled = false; btn.innerHTML = '↻ 뉴스 불러오기';
 }
 
+const RTF = new Intl.RelativeTimeFormat('ko');
+
+function relTime(ms) {
+  const min = Math.floor(ms / 60000);
+  if (min < 60)   return RTF.format(-min, 'minute');
+  if (min < 1440) return RTF.format(-Math.floor(min / 60), 'hour');
+  return RTF.format(-Math.floor(min / 1440), 'day');
+}
+
 function showCacheInfo() {
   if (!newsCache || !newsCache.savedAt) return;
-  const diff = Math.floor((Date.now() - newsCache.savedAt) / 60000);
-  const timeStr = diff < 60 ? diff + '분 전' : Math.floor(diff/60) + '시간 전';
   const cacheBtn = document.getElementById('cache-btn');
-  if (cacheBtn) cacheBtn.title = `캐시 저장: ${timeStr} — 클릭하면 새로 불러올 수 있어요`;
+  if (cacheBtn) cacheBtn.title = `캐시 저장: ${relTime(Date.now() - newsCache.savedAt)} — 클릭하면 새로 불러올 수 있어요`;
 }
 
 // ── RENDER NEWS ──
@@ -1101,13 +1097,8 @@ function onPasteInput(catId) {
 
 function formatDate(dateStr) {
   if (!dateStr) return '';
-  try {
-    const d = new Date(dateStr);
-    const diff = Math.floor((Date.now() - d) / 60000);
-    if (diff < 60) return `${diff}분 전`;
-    if (diff < 1440) return `${Math.floor(diff/60)}시간 전`;
-    return `${Math.floor(diff/1440)}일 전`;
-  } catch { return ''; }
+  const d = new Date(dateStr);
+  return isNaN(d) ? '' : relTime(Date.now() - d);
 }
 
 // ── BOOKMARKS ──
@@ -1135,7 +1126,7 @@ function renderBookmarks() {
     return;
   }
   const catMap = Object.fromEntries(CATS.map(c => [c.id, c]));
-  list.innerHTML = filtered.map((b, i) => {
+  list.innerHTML = filtered.map(b => {
     const realIdx = bookmarks.indexOf(b);
     if (b.type === 'fact') {
       return `<div class="bm-card fade">
@@ -1387,11 +1378,9 @@ async function generateContent(news, target, userContent, catId) {
     }
 
     // Korean is now embedded in the content JSON directly
-    const result = { content, news, catId };
-    if (target === 'bm') lastGeneratedContentBm = result;
-    else lastGeneratedContent = result;
-
     renderContentHTML(content, bodyId);
+    contentStore[bodyId].news = news;
+    contentStore[bodyId].catId = catId;
   } catch(e) {
     document.getElementById(bodyId).innerHTML =
       `<div class="empty-state"><strong>생성 실패</strong>${e.message}</div>`;
@@ -1417,10 +1406,6 @@ function renderContentHTML(content, bodyId) {
     disagree: ['cb-disagree', '반대 ✗'],
     funny:    ['cb-funny',    '😂']
   };
-
-  // Track selection state
-  let selectedHeadlineIdx = null;
-  let selectedPersona = null;
 
   // Build headlines HTML
   const headlinesHTML = (content.headlines || []).map((h, i) => `
@@ -1495,11 +1480,10 @@ function renderContentHTML(content, bodyId) {
     </div>`;
 
   // Store content reference for this bodyId
-  window._contentStore = window._contentStore || {};
-  window._contentStore[bodyId] = { content, selectedHeadlineIdx: null, selectedPersona: null };
+  contentStore[bodyId] = { content, news: null, catId: null, selectedHeadlineIdx: null, selectedPersona: null };
 }
 function selectHeadline(bodyId, idx) {
-  const store = window._contentStore?.[bodyId];
+  const store = contentStore[bodyId];
   if (!store) return;
   store.selectedHeadlineIdx = idx;
   // Update UI
@@ -1510,7 +1494,7 @@ function selectHeadline(bodyId, idx) {
 }
 
 function selectPersona(bodyId, key) {
-  const store = window._contentStore?.[bodyId];
+  const store = contentStore[bodyId];
   if (!store) return;
   store.selectedPersona = key;
   // Update UI
@@ -1522,7 +1506,7 @@ function selectPersona(bodyId, key) {
 }
 
 function updateCopyBtn(bodyId) {
-  const store = window._contentStore?.[bodyId];
+  const store = contentStore[bodyId];
   if (!store) return;
   const btn = document.getElementById(`copy-main-${bodyId}`);
   const hint = document.getElementById(`copy-hint-${bodyId}`);
@@ -1542,7 +1526,7 @@ function updateCopyBtn(bodyId) {
 }
 
 function copyFinal(bodyId) {
-  const store = window._contentStore?.[bodyId];
+  const store = contentStore[bodyId];
   if (!store || store.selectedHeadlineIdx === null || !store.selectedPersona) return;
 
   const headline = store.content.headlines[store.selectedHeadlineIdx];
@@ -1568,7 +1552,7 @@ function copyFinal(bodyId) {
 }
 
 function copyComments(bodyId) {
-  const store = window._contentStore?.[bodyId];
+  const store = contentStore[bodyId];
   if (!store) return;
   const comments = store.content.comments || [];
   const text = comments.map(c => `${c.user}: ${cleanContent(c.text)}`).join('\n');
@@ -1583,20 +1567,16 @@ function copyComments(bodyId) {
 }
 
 // ── SAVE CONTENT ──
-function saveCurrentContent()   { doSaveContent(lastGeneratedContent, 'save-btn-main'); }
-function saveCurrentContentBm() { doSaveContent(lastGeneratedContentBm, 'save-btn-bm'); }
-
-function doSaveContent(result, btnId) {
-  if (!result) return;
-  const { content, kr, news } = result;
-  const saved = {
+function saveCurrentContent(bodyId, btnId) {
+  const store = contentStore[bodyId];
+  if (!store || !store.news) return;
+  savedContents.unshift({
     id: Date.now(),
     savedAt: Date.now(),
-    newsTitle: news.title,
-    newsSource: news.source,
-    content
-  };
-  savedContents.unshift(saved);
+    newsTitle: store.news.title,
+    newsSource: store.news.source,
+    content: store.content
+  });
   localStorage.setItem('px_saved', JSON.stringify(savedContents));
   updateBadges();
 
@@ -1819,6 +1799,9 @@ function renderFunFacts(data, wikiUrl) {
     container.innerHTML = '<div class="empty-state"><strong>Fun fact를 찾지 못했어요</strong>다른 게임을 시도해보세요</div>';
     return;
   }
+  // Keep the result here instead of stuffing it into onclick attributes.
+  ffLast = { data, url: wikiUrl };
+
   container.innerHTML = `<div class="ff-cards">${data.facts.map((f, i) => `
     <div class="ff-card fade" style="animation-delay:${i*0.08}s">
       <div class="ff-game">${data.game}</div>
@@ -1827,25 +1810,27 @@ function renderFunFacts(data, wikiUrl) {
       <div class="ff-footer">
         <a class="ff-link" href="${wikiUrl}" target="_blank" rel="noopener">🔗 Wikipedia 원문 ↗</a>
         <div class="ff-actions">
-          <button class="btn-icon" onclick="bookmarkFact(${i}, ${JSON.stringify(data).replace(/'/g,"\'")},'${wikiUrl}')" id="ff-bm-${i}" title="북마크 저장">🤍</button>
-          <button class="copy-btn" onclick="copyFact(${i},'${encodeURIComponent(f.title)}','${encodeURIComponent(f.body)}')" id="ff-copy-${i}">Copy</button>
+          <button class="btn-icon" onclick="bookmarkFact(${i})" id="ff-bm-${i}" title="북마크 저장">🤍</button>
+          <button class="copy-btn" onclick="copyFact(${i})" id="ff-copy-${i}">Copy</button>
         </div>
       </div>
     </div>`).join('')}</div>`;
 }
 
-function copyFact(idx, titleEnc, bodyEnc) {
-  const title = decodeURIComponent(titleEnc);
-  const body = decodeURIComponent(bodyEnc);
-  navigator.clipboard.writeText(title + '\n\n' + body).then(() => {
+function copyFact(idx) {
+  const f = ffLast?.data?.facts?.[idx];
+  if (!f) return;
+  navigator.clipboard.writeText(f.title + '\n\n' + f.body).then(() => {
     const btn = document.getElementById('ff-copy-' + idx);
     if (btn) { btn.textContent = '✓ 복사됨'; btn.classList.add('copied'); setTimeout(() => { btn.textContent = 'Copy'; btn.classList.remove('copied'); }, 2000); }
   });
 }
 
-function bookmarkFact(idx, dataStr, wikiUrl) {
-  const data = typeof dataStr === 'string' ? JSON.parse(dataStr) : dataStr;
+function bookmarkFact(idx) {
+  if (!ffLast) return;
+  const { data, url: wikiUrl } = ffLast;
   const fact = data.facts[idx];
+  if (!fact) return;
   const existing = bookmarks.findIndex(b => b.type === 'fact' && b.title === fact.title);
   if (existing >= 0) {
     bookmarks.splice(existing, 1);
@@ -2171,9 +2156,6 @@ function steamCopyCmd(id, btn){
   const t = document.getElementById(id).textContent;
   navigator.clipboard.writeText(t).then(() => { const o = btn.textContent; btn.textContent = '복사됨 ✓'; btn.classList.add('copied'); setTimeout(() => { btn.textContent = o; btn.classList.remove('copied'); }, 1400); });
 }
-function steamCopyUrls(arr, btn){
-  navigator.clipboard.writeText(arr.join('\n')).then(() => { const o = btn.textContent; btn.textContent = '복사됨 ✓'; btn.classList.add('copied'); setTimeout(() => { btn.textContent = o; btn.classList.remove('copied'); }, 1400); });
-}
 
 // ══ SRT GENERATOR TAB (srt-prefixed, isolated from rest of board) ══
 let srtAudioFile = null;
@@ -2224,7 +2206,7 @@ function srtOnAudioChange() {
   srtSetAudioFile(document.getElementById('srt-audio-input').files[0]);
 }
 
-document.addEventListener('DOMContentLoaded', function() {
+function srtInitDropzone() {
   const box = document.getElementById('srt-audio-box');
   if (!box) return;
   ['dragenter','dragover'].forEach(evt => {
@@ -2246,7 +2228,7 @@ document.addEventListener('DOMContentLoaded', function() {
       srtSetAudioFile(file);
     }
   });
-});
+}
 
 function srtBindPair(sliderId, numId, min, max, decimals) {
   const slider = document.getElementById(sliderId);
@@ -2269,12 +2251,12 @@ function srtBindPair(sliderId, numId, min, max, decimals) {
   num.addEventListener('blur', commitNumber);
   num.addEventListener('keydown', e => { if (e.key === 'Enter') { commitNumber(); num.blur(); } });
 }
-document.addEventListener('DOMContentLoaded', function() {
+function srtInitSliders() {
   if (!document.getElementById('srt-max-chars-slider')) return;
   srtBindPair('srt-max-chars-slider', 'srt-max-chars-num', 7, 72, 0);
   srtBindPair('srt-min-dur-slider', 'srt-min-dur-num', 1.2, 6.0, 1);
   srtBindPair('srt-gap-slider', 'srt-gap-num', 0, 10, 0);
-});
+}
 
 function srtSetFps(v, btn) {
   srtCurrentFps = v;
@@ -2824,30 +2806,31 @@ function ledyDownload() {
   ledyShowStatus('ok', '.bat을 내려받았어요. <b>표정 PNG가 있는 폴더에 넣고 더블클릭</b>하면 같은 폴더에 ledy.mov가 생깁니다. (FFmpeg 설치 필요)');
 }
 
-document.addEventListener('DOMContentLoaded', function() {
+function ledyInit() {
   const p = document.getElementById('ledy-prompt-input');
   if (p) p.value = ledyGetPrompt();
   ledyDict = ledyParseDict(ledyGetPrompt());
   srtBindPair('ledy-hold-slider', 'ledy-hold-num', 1.0, 6.0, 1);
   srtBindPair('ledy-res-slider', 'ledy-res-num', 200, 1000, 0);
-});
+}
 
-document.addEventListener('DOMContentLoaded', function() {
+function srtInitKeyField() {
   const k = document.getElementById('srt-k-el');
   if (k) k.addEventListener('input', srtCheckReady);
   srtInitKey();
   srtCheckReady();
-});
+}
 
 // ── INIT ──
 initKeys();
-// Load cached news on startup
-if (newsCache && newsCache.data && Object.keys(newsCache.data).length) {
-  newsData = newsCache.data;
-  renderNews();
-  document.getElementById('cache-btn').style.display = '';
-  showCacheInfo();
-}
+loadCachedNews();
+
+document.addEventListener('DOMContentLoaded', function() {
+  srtInitDropzone();
+  srtInitSliders();
+  srtInitKeyField();
+  ledyInit();
+});
 </script>
 </body>
 </html>
