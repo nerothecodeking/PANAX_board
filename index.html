@@ -650,7 +650,7 @@ header{background:var(--surface);border-bottom:2px solid var(--border);padding:0
         </div>
       </div>
 
-      <div class="srt-hint">자막 블록은 음성의 자연스러운 침묵(0.6초, 문장 끝은 0.3초)과 최대 길이 기준으로 나뉘어요. 음성-자막 싱크는 항상 단어 단위 타임스탬프 그대로 유지돼요.</div>
+      <div class="srt-hint">문장이 끝나면 침묵 길이와 무관하게 무조건 새 자막으로 넘어가고, 그 다음은 문맥 전환 접속사(however, but, instead...), 0.6초 이상 침묵, 최대 길이 순으로 나뉘어요. 길이 때문에 잘라야 할 때는 쉼표나 접속사 앞을 찾아서 끊어요. 각 자막은 다음 자막이 시작할 때까지 화면에 유지돼요(간격 설정만큼 띄움). 음성-자막 싱크는 항상 단어 단위 타임스탬프 그대로 유지돼요.</div>
       </div>
 
       <div class="srt-panel">
@@ -688,8 +688,8 @@ header{background:var(--surface);border-bottom:2px solid var(--border);padding:0
       <div class="srt-field">
         <label class="srt-label">MOV 가로 해상도 (px)</label>
         <div class="srt-slider-row">
-          <input type="range" id="ledy-res-slider" min="200" max="1000" step="50" value="500">
-          <div class="srt-num-box"><input type="number" id="ledy-res-num" min="200" max="1000" step="50" value="500"><span class="srt-num-unit">px</span></div>
+          <input type="range" id="ledy-res-slider" min="100" max="1000" step="50" value="500">
+          <div class="srt-num-box"><input type="number" id="ledy-res-num" min="100" max="1000" step="50" value="500"><span class="srt-num-unit">px</span></div>
         </div>
         <div class="srt-hint">세로는 원본 비율로 자동 계산돼요. 화면에 표시할 크기의 1.5배 정도를 권장합니다.</div>
       </div>
@@ -2360,39 +2360,77 @@ function srtFmtTime(sec) {
   return pad(h,2) + ':' + pad(m,2) + ':' + pad(s,2) + ',' + pad(ms,3);
 }
 
-// Group words into caption blocks using: natural silence (>0.6s), a shorter
-// silence after sentence-ending punctuation (>0.3s, catches real sentence
-// breaks while leaving mid-sentence "TV?" or "DOOM!" untouched since TTS
-// barely pauses there), and max-length cap (1x line for one-line mode, 2x for
-// two-line mode).
+// Words that mark a shift in thought. STRONG ones open a caption on their own
+// (they almost never sit inside a phrase); WEAK ones never force a break, they
+// are only preferred cut positions when the length cap forces a cut anyway —
+// forcing a break on every "and" would shred the captions.
+const SRT_STRONG_BREAKS = ['however','instead','meanwhile','therefore','besides','anyway','actually','basically','honestly','otherwise','but'];
+const SRT_WEAK_BREAKS = ['and','or','so','because','while','since','when','if','that','yet','though','although','whereas','plus','still'];
+// Periods that do not end a sentence.
+const SRT_ABBREV = ['mr.','mrs.','ms.','dr.','st.','jr.','sr.','vs.','etc.','e.g.','i.e.','inc.','ltd.','prof.','no.','fig.','approx.'];
+
+function srtWordKey(text) { return text.toLowerCase().replace(/[^a-z]/g, ''); }
+
+function srtEndsSentence(text) {
+  if (!/[.!?]["')\]]*$/.test(text)) return false;
+  const t = text.toLowerCase().replace(/["')\]]+$/, '');
+  if (SRT_ABBREV.includes(t)) return false;
+  if (/(^|[^a-z])[a-z]\.$/.test(t)) return false;   // U.S., J. — initials, not an ending
+  return true;
+}
+
+// Group words into caption blocks. Break priority:
+//   1. end of a sentence (.!? minus abbreviations) — always, whatever the pause
+//   2. a strong shift word (however / instead / but ...) once the block has body
+//   3. natural silence (>0.6s)
+//   4. max-length cap — cut at the latest clause comma, else the latest
+//      conjunction, else right where the cap runs out
+// Cap is 1x line for one-line mode, 2x for two-line mode.
 function srtBuildBlocks(words, maxChars, lineMode) {
   const PAUSE_BREAK = 0.6;
-  const SENTENCE_PAUSE_BREAK = 0.3;
   const lengthCap = lineMode === 'one' ? maxChars : maxChars * 2;
   const blocks = [];
   let current = [];
 
-  function currentText(arr) { return arr.map(w => w.text).join(' '); }
+  const textOf = arr => arr.map(w => w.text).join(' ');
+
+  // Latest cut inside arr whose tail still fits tailCap and whose head is not
+  // left as a stub. 0 = nothing usable, caller falls back to a plain cut.
+  const minHead = lengthCap * 0.4;
+  function bestCut(arr, tailCap) {
+    for (let j = arr.length - 1; j >= 1; j--) {
+      if (textOf(arr.slice(j)).length > tailCap) break;
+      if (textOf(arr.slice(0, j)).length < minHead) continue;
+      if (/[,;:—–-]["')\]]*$/.test(arr[j - 1].text)) return j;
+    }
+    for (let j = arr.length - 1; j >= 1; j--) {
+      if (textOf(arr.slice(j)).length > tailCap) break;
+      if (textOf(arr.slice(0, j)).length < minHead) continue;
+      const k = srtWordKey(arr[j].text);
+      if (SRT_STRONG_BREAKS.includes(k) || SRT_WEAK_BREAKS.includes(k)) return j;
+    }
+    return 0;
+  }
 
   for (let i = 0; i < words.length; i++) {
     const w = words[i];
-    const tentative = current.concat([w]);
-    const tentativeText = currentText(tentative);
-    const tooLong = tentativeText.length > lengthCap;
+    let cut = false;
 
-    let bigPause = false;
-    if (current.length > 0) {
-      const gap = w.start - current[current.length - 1].end;
-      const prevEndsSentence = /[.!?]["')\]]*$/.test(current[current.length - 1].text);
-      bigPause = prevEndsSentence ? (gap > SENTENCE_PAUSE_BREAK) : (gap > PAUSE_BREAK);
+    if (current.length) {
+      const prev = current[current.length - 1];
+      if (srtEndsSentence(prev.text)) cut = true;
+      else if (w.start - prev.end > PAUSE_BREAK) cut = true;
+      else if (SRT_STRONG_BREAKS.includes(srtWordKey(w.text)) && textOf(current).length >= lengthCap / 2) cut = true;
     }
 
-    if (tooLong || bigPause) {
-      if (current.length) blocks.push(current);
-      current = [w];
-    } else {
-      current.push(w);
+    if (!cut && current.length && textOf(current.concat([w])).length > lengthCap) {
+      const j = bestCut(current, lengthCap - w.text.length - 1);
+      if (j) { blocks.push(current.slice(0, j)); current = current.slice(j); }
+      else cut = true;
     }
+
+    if (cut) { blocks.push(current); current = []; }
+    current.push(w);
   }
   if (current.length) blocks.push(current);
 
@@ -2403,18 +2441,18 @@ function srtBuildBlocks(words, maxChars, lineMode) {
   }));
 }
 
-// Enforce minimum duration and minimum gap between captions (display
-// timing only — never touches the underlying word timestamps).
+// Hold every caption until the next one starts, so the silence between
+// sentences never shows up as a hole in Premiere. Gap 0 means back to back,
+// minus 1ms so identical timecodes are never read as an overlap. Minimum
+// duration only shapes the last caption, which has nothing to run into.
+// Display timing only — never touches the underlying word timestamps.
 function srtApplyTimingRules(blocks, minDuration, gapFrames, fps) {
   const gapSeconds = fps > 0 ? gapFrames / fps : 0;
   for (let i = 0; i < blocks.length; i++) {
     const b = blocks[i];
-    let displayEnd = Math.max(b.end, b.start + minDuration);
-    if (i < blocks.length - 1) {
-      const nextStart = blocks[i + 1].start;
-      const maxAllowed = Math.max(nextStart - gapSeconds, b.start + 0.05);
-      displayEnd = Math.min(displayEnd, maxAllowed);
-    }
+    const displayEnd = i < blocks.length - 1
+      ? blocks[i + 1].start - (gapSeconds || 0.001)
+      : Math.max(b.end, b.start + minDuration);
     b.displayEnd = Math.max(displayEnd, b.start + 0.05);
   }
   return blocks;
@@ -2442,6 +2480,33 @@ function srtBlocksToSRT(blocks, maxChars, lineMode) {
     srt += (idx + 1) + '\n' + srtFmtTime(block.start) + ' --> ' + srtFmtTime(block.displayEnd) + '\n' + lines.join('\n') + '\n\n';
   });
   return srt;
+}
+
+// Console check: srtSelfTest(). Fails loudly if the splitting or timing rules
+// regress. Word timings are fake and evenly spaced, so only the rules are
+// under test, not the alignment API.
+function srtSelfTest() {
+  const mk = s => s.split(' ').map((t, i) => ({ text: t, start: i * 0.3, end: i * 0.3 + 0.25 }));
+  const texts = (s, cap) => srtBuildBlocks(mk(s), cap, 'one').map(b => b.words.map(w => w.text).join(' '));
+  const eq = (got, want, name) => console.assert(JSON.stringify(got) === JSON.stringify(want), name, got);
+
+  eq(texts('It ships today. Nobody saw it coming.', 40),
+     ['It ships today.', 'Nobody saw it coming.'], 'sentence end splits regardless of pause');
+  eq(texts('Mr. Smith said no.', 40),
+     ['Mr. Smith said no.'], 'abbreviation is not a sentence end');
+  eq(texts('The U.S. launch slipped again and nobody explained why', 40),
+     ['The U.S. launch slipped again', 'and nobody explained why'], 'initials survive, cap cuts at the conjunction');
+  eq(texts('The patch is finally live however nobody actually cares', 30),
+     ['The patch is finally live', 'however nobody actually cares'], 'strong shift word opens a caption');
+  eq(texts('It runs fine on PC, but the console build stutters', 24),
+     ['It runs fine on PC,', 'but the console build', 'stutters'], 'cap cuts at the comma, not mid-phrase');
+  eq(texts('Sony announced the remaster and fans immediately started arguing about it', 26),
+     ['Sony announced the', 'remaster and fans', 'immediately started', 'arguing about it'], 'lookback never leaves a one-word stub');
+
+  const timed = srtApplyTimingRules([{ start: 0, end: 1 }, { start: 3, end: 4 }], 1.2, 0, 30);
+  console.assert(Math.abs(timed[0].displayEnd - 2.999) < 1e-6, 'caption holds until the next one starts', timed[0].displayEnd);
+  console.assert(Math.abs(timed[1].displayEnd - 4.2) < 1e-6, 'last caption is the only one minimum duration reaches', timed[1].displayEnd);
+  console.log('srtSelfTest done');
 }
 
 function srtDownload() {
@@ -2811,7 +2876,7 @@ function ledyInit() {
   if (p) p.value = ledyGetPrompt();
   ledyDict = ledyParseDict(ledyGetPrompt());
   srtBindPair('ledy-hold-slider', 'ledy-hold-num', 1.0, 6.0, 1);
-  srtBindPair('ledy-res-slider', 'ledy-res-num', 200, 1000, 0);
+  srtBindPair('ledy-res-slider', 'ledy-res-num', 100, 1000, 0);
 }
 
 function srtInitKeyField() {
