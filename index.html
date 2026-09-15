@@ -650,7 +650,7 @@ header{background:var(--surface);border-bottom:2px solid var(--border);padding:0
         </div>
       </div>
 
-      <div class="srt-hint">문장이 끝나면 침묵 길이와 무관하게 무조건 새 자막으로 넘어가고, 그 다음은 문맥 전환 접속사(however, but, instead...), 0.6초 이상 침묵, 최대 길이 순으로 나뉘어요. 길이 때문에 잘라야 할 때는 쉼표나 접속사 앞을 찾아서 끊어요. 각 자막은 다음 자막이 시작할 때까지 화면에 유지돼요(간격 설정만큼 띄움). 음성-자막 싱크는 항상 단어 단위 타임스탬프 그대로 유지돼요.</div>
+      <div class="srt-hint">대본의 줄바꿈(또는 . ! ?)에서는 무조건 새 자막으로 넘어가요. 줄바꿈이 있는 대본이면 한 줄 안에서는 최대 길이를 넘을 때만 나뉘고, 줄바꿈이 없는 대본이면 문맥 전환 접속사(however, but, instead...)와 0.6초 이상 침묵에서도 나뉘어요. 길이 때문에 잘라야 할 때는 쉼표·따옴표 앞 → 접속사 앞 → the/of/should 같은 단어가 끝에 남지 않는 곳 순으로 찾고, 따옴표로 감싼 제목 안에서는 자르지 않아요. 각 자막은 다음 자막이 시작할 때까지 화면에 유지돼요(간격 설정만큼 띄움). 음성-자막 싱크는 항상 단어 단위 타임스탬프 그대로 유지돼요.</div>
       </div>
 
       <div class="srt-panel">
@@ -665,7 +665,7 @@ header{background:var(--surface);border-bottom:2px solid var(--border);padding:0
      <div class="srt-split-col">
       <div class="srt-col-head">🎭 Ledy 표정 (MOV)</div>
       <div class="srt-panel">
-      <div class="srt-panel-desc">SRT를 먼저 생성한 뒤 사용하세요. 문장별로 Ledy 표정을 배치하고, 투명 배경 MOV를 만드는 <b>.bat 파일</b>을 내려받습니다. 표정 PNG가 있는 폴더에 넣고 더블클릭하면 끝이에요.</div>
+      <div class="srt-panel-desc">SRT를 먼저 생성한 뒤 사용하세요. 대본 한 줄마다 Ledy 표정을 하나씩 배치하고 SRT 자막이 바뀌는 순간에 맞춰 바꾸며, 투명 배경 MOV를 만드는 <b>.bat 파일</b>을 내려받습니다. 표정 PNG가 있는 폴더에 넣고 더블클릭하면 끝이에요.</div>
 
       <button class="ledy-toggle" id="ledy-toggle" onclick="ledyToggleFold()"><span class="ledy-caret">▸</span> 감정 배치 프롬프트</button>
       <div class="ledy-fold" id="ledy-fold">
@@ -674,15 +674,6 @@ header{background:var(--surface);border-bottom:2px solid var(--border);padding:0
           <div class="ledy-contract">ℹ 출력 형식(JSON 배열 · 길이 일치)은 자동으로 덧붙습니다. 감정 사전만 관리하세요. 표정을 추가하려면 사전에 <code>이름 (변형수)</code> 한 줄과 설명을 넣으면 됩니다. HTML은 고칠 필요 없어요.</div>
           <button class="btn btn-sm" onclick="ledyResetPrompt()" style="flex-shrink:0;">기본값으로 되돌리기</button>
         </div>
-      </div>
-
-      <div class="srt-field">
-        <label class="srt-label">표정 최소 유지 시간 (초)</label>
-        <div class="srt-slider-row">
-          <input type="range" id="ledy-hold-slider" min="1.0" max="6.0" step="0.1" value="2.0">
-          <div class="srt-num-box"><input type="number" id="ledy-hold-num" min="1.0" max="6.0" step="0.1" value="2.0"><span class="srt-num-unit">초</span></div>
-        </div>
-        <div class="srt-hint">이 시간보다 짧은 문장은 다음 문장과 합쳐져요. 값이 클수록 표정이 덜 바뀝니다.</div>
       </div>
 
       <div class="srt-field">
@@ -700,7 +691,7 @@ header{background:var(--surface);border-bottom:2px solid var(--border);padding:0
       <div class="srt-status" id="ledy-status-box"></div>
 
       <div class="ledy-cues" id="ledy-cues">
-        <div class="ledy-cues-hdr"><span>문장별 표정 (직접 수정 가능)</span><span id="ledy-cue-count"></span></div>
+        <div class="ledy-cues-hdr"><span>줄별 표정 (직접 수정 가능)</span><span id="ledy-cue-count"></span></div>
         <div id="ledy-cue-list"></div>
       </div>
       </div>
@@ -2160,7 +2151,7 @@ function steamCopyCmd(id, btn){
 // ══ SRT GENERATOR TAB (srt-prefixed, isolated from rest of board) ══
 let srtAudioFile = null;
 let srtLastSRT = null;
-let srtLastWords = null;
+let srtLastBlocks = null;
 let srtAudioDuration = 0;
 let srtLastFilename = 'subtitles.srt';
 let srtCurrentFps = 29.97;
@@ -2182,7 +2173,7 @@ function srtSaveKey() {
 
 function srtSetAudioFile(file) {
   srtAudioFile = file || null;
-  srtLastWords = null;
+  srtLastBlocks = null;
   srtAudioDuration = 0;
   ledyReset();
   const label = document.getElementById('srt-audio-label');
@@ -2333,12 +2324,13 @@ async function srtGenerate() {
     const fps = srtCurrentFps;
     const lineMode = document.querySelector('input[name="srt-line-mode"]:checked').value;
 
+    srtMarkLineEnds(words, script);
     let blocks = srtBuildBlocks(words, maxChars, lineMode);
     blocks = srtApplyTimingRules(blocks, minDuration, gapFrames, fps);
     srtLastSRT = srtBlocksToSRT(blocks, maxChars, lineMode);
     srtLastFilename = (srtAudioFile.name.replace(/\.[^/.]+$/, '') || 'subtitles') + '.srt';
 
-    srtLastWords = words;
+    srtLastBlocks = blocks;
     ledyOnWordsReady();
 
     srtShowStatus('ok', '완료! 단어 ' + words.length + '개, 자막 ' + blocks.length + '블록 생성됨. 평균 신뢰도(loss): ' + (data.loss !== undefined ? data.loss.toFixed(3) : '—') + ' (낮을수록 정확). 다운로드 버튼을 눌러주세요.');
@@ -2365,7 +2357,12 @@ function srtFmtTime(sec) {
 // are only preferred cut positions when the length cap forces a cut anyway —
 // forcing a break on every "and" would shred the captions.
 const SRT_STRONG_BREAKS = ['however','instead','meanwhile','therefore','besides','anyway','actually','basically','honestly','otherwise','but'];
-const SRT_WEAK_BREAKS = ['and','or','so','because','while','since','when','if','that','yet','though','although','whereas','plus','still'];
+const SRT_WEAK_BREAKS = ['and','or','so','because','while','since','when','if','that','yet','though','although','whereas','plus','still','who','which','where','how','why','what','whatever'];
+// Words that must not be left dangling at the end of a caption: articles,
+// prepositions and auxiliaries belong with the word that follows them.
+const SRT_GLUE = ['the','a','an','this','these','those','my','your','his','her','its','our','their','some','any','every',
+  'of','on','in','to','for','with','at','from','by','into','onto','about','across','through','over','under','around','like','as',
+  'is','are','was','were','be','been','am','will','would','can','could','should','shall','may','might','must','do','does','did','has','have','had'];
 // Periods that do not end a sentence.
 const SRT_ABBREV = ['mr.','mrs.','ms.','dr.','st.','jr.','sr.','vs.','etc.','e.g.','i.e.','inc.','ltd.','prof.','no.','fig.','approx.'];
 
@@ -2379,62 +2376,95 @@ function srtEndsSentence(text) {
   return true;
 }
 
-// Group words into caption blocks. Break priority:
-//   1. end of a sentence (.!? minus abbreviations) — always, whatever the pause
-//   2. a strong shift word (however / instead / but ...) once the block has body
-//   3. natural silence (>0.6s)
-//   4. max-length cap — cut at the latest clause comma, else the latest
-//      conjunction, else right where the cap runs out
+// Scripts come with one caption per line and no periods, so the line break is
+// the sentence boundary. Flag the last aligned word of every script line with
+// lineEnd. Matching runs on letters and digits only, so the alignment splitting
+// or merging tokens differently from the script (quotes, hyphens, contractions)
+// can't shift the flags. A script without line breaks gets no flags.
+function srtMarkLineEnds(words, script) {
+  const norm = s => s.toLowerCase().replace(/[^a-z0-9]/g, '');
+  const lines = script.split(/\r?\n/).map(norm).filter(Boolean);
+  if (lines.length < 2) return;
+  const ends = [];
+  let total = 0;
+  for (const l of lines) { total += l.length; ends.push(total); }
+  let pos = 0, e = 0;
+  for (const w of words) {
+    pos += norm(w.text).length;
+    while (e < ends.length && pos >= ends[e]) { w.lineEnd = true; e++; }
+  }
+}
+
+// Group words into caption blocks in two passes.
+// Pass 1 cuts the words into units that always get their own caption:
+//   - end of a script line, or a sentence (.!? minus abbreviations)
+//   - scripts without line breaks only: natural silence (>0.6s), or a strong
+//     shift word once the unit has body. With line breaks the script already
+//     decided where thoughts split, so neither may cut inside a line.
+// Pass 2 splits any unit longer than the cap, looking at the whole unit so
+// neither side is left as a stub: cut at clause punctuation or before an
+// opening quote, else before a conjunction, else anywhere that doesn't leave
+// the/of/should dangling. Never inside a quoted title.
 // Cap is 1x line for one-line mode, 2x for two-line mode.
 function srtBuildBlocks(words, maxChars, lineMode) {
   const PAUSE_BREAK = 0.6;
   const lengthCap = lineMode === 'one' ? maxChars : maxChars * 2;
-  const blocks = [];
-  let current = [];
+  const minPart = lengthCap * 0.4;
+  const byLines = words.some(w => w.lineEnd);
 
   const textOf = arr => arr.map(w => w.text).join(' ');
+  const quoteCount = arr => arr.reduce((n, w) => n + (w.text.match(/["“”]/g) || []).length, 0);
 
-  // Latest cut inside arr whose tail still fits tailCap and whose head is not
-  // left as a stub. 0 = nothing usable, caller falls back to a plain cut.
-  const minHead = lengthCap * 0.4;
-  function bestCut(arr, tailCap) {
-    for (let j = arr.length - 1; j >= 1; j--) {
-      if (textOf(arr.slice(j)).length > tailCap) break;
-      if (textOf(arr.slice(0, j)).length < minHead) continue;
-      if (/[,;:—–-]["')\]]*$/.test(arr[j - 1].text)) return j;
+  const units = [];
+  let unit = [];
+  for (const w of words) {
+    if (unit.length) {
+      const prev = unit[unit.length - 1];
+      let cut = prev.lineEnd || srtEndsSentence(prev.text);
+      if (!cut && !byLines) {
+        cut = w.start - prev.end > PAUSE_BREAK
+          || (SRT_STRONG_BREAKS.includes(srtWordKey(w.text)) && textOf(unit).length >= lengthCap / 2);
+      }
+      if (cut) { units.push(unit); unit = []; }
     }
-    for (let j = arr.length - 1; j >= 1; j--) {
-      if (textOf(arr.slice(j)).length > tailCap) break;
-      if (textOf(arr.slice(0, j)).length < minHead) continue;
-      const k = srtWordKey(arr[j].text);
-      if (SRT_STRONG_BREAKS.includes(k) || SRT_WEAK_BREAKS.includes(k)) return j;
+    unit.push(w);
+  }
+  if (unit.length) units.push(unit);
+
+  // Index j puts arr[0..j) in this caption and arr[j..] in the next. The
+  // latest cut of the best tier wins, as long as the head fits the cap and
+  // neither side is shorter than minPart. Cuts inside quotes are only tried
+  // once nothing outside works (a title longer than the cap). Nothing fits:
+  // fill the cap greedily.
+  function bestCut(arr) {
+    const tiers = [
+      j => /[,;:—–-]["')\]]*$/.test(arr[j - 1].text) || /^["“]/.test(arr[j].text),
+      j => SRT_STRONG_BREAKS.includes(srtWordKey(arr[j].text)) || SRT_WEAK_BREAKS.includes(srtWordKey(arr[j].text)),
+      j => !SRT_GLUE.includes(srtWordKey(arr[j - 1].text)),
+    ];
+    for (const inQuotesOk of [false, true]) {
+      for (const ok of tiers) {
+        for (let j = arr.length - 1; j >= 1; j--) {
+          const head = textOf(arr.slice(0, j)).length;
+          if (head > lengthCap) continue;
+          if (head < minPart) break;
+          if (textOf(arr.slice(j)).length < minPart) continue;
+          if ((inQuotesOk || quoteCount(arr.slice(0, j)) % 2 === 0) && ok(j)) return j;
+        }
+      }
     }
-    return 0;
+    let j = 1;
+    while (j < arr.length - 1 && textOf(arr.slice(0, j + 1)).length <= lengthCap) j++;
+    return j;
   }
 
-  for (let i = 0; i < words.length; i++) {
-    const w = words[i];
-    let cut = false;
-
-    if (current.length) {
-      const prev = current[current.length - 1];
-      if (srtEndsSentence(prev.text)) cut = true;
-      else if (w.start - prev.end > PAUSE_BREAK) cut = true;
-      else if (SRT_STRONG_BREAKS.includes(srtWordKey(w.text)) && textOf(current).length >= lengthCap / 2) cut = true;
-    }
-
-    if (!cut && current.length && textOf(current.concat([w])).length > lengthCap) {
-      const j = bestCut(current, lengthCap - w.text.length - 1);
-      if (j) { blocks.push(current.slice(0, j)); current = current.slice(j); }
-      else cut = true;
-    }
-
-    if (cut) { blocks.push(current); current = []; }
-    current.push(w);
+  function split(arr) {
+    if (arr.length < 2 || textOf(arr).length <= lengthCap) return [arr];
+    const j = bestCut(arr);
+    return [arr.slice(0, j)].concat(split(arr.slice(j)));
   }
-  if (current.length) blocks.push(current);
 
-  return blocks.map(words => ({
+  return units.flatMap(split).map(words => ({
     words,
     start: words[0].start,
     end: words[words.length - 1].end
@@ -2482,11 +2512,15 @@ function srtBlocksToSRT(blocks, maxChars, lineMode) {
   return srt;
 }
 
-// Console check: srtSelfTest(). Fails loudly if the splitting or timing rules
+// Console check: srtSelfTest(). Fails loudly if the splitting, timing or Ledy line rules
 // regress. Word timings are fake and evenly spaced, so only the rules are
 // under test, not the alignment API.
 function srtSelfTest() {
-  const mk = s => s.split(' ').map((t, i) => ({ text: t, start: i * 0.3, end: i * 0.3 + 0.25 }));
+  const mk = s => {
+    const words = s.split(/\s+/).map((t, i) => ({ text: t, start: i * 0.3, end: i * 0.3 + 0.25 }));
+    srtMarkLineEnds(words, s);
+    return words;
+  };
   const texts = (s, cap) => srtBuildBlocks(mk(s), cap, 'one').map(b => b.words.map(w => w.text).join(' '));
   const eq = (got, want, name) => console.assert(JSON.stringify(got) === JSON.stringify(want), name, got);
 
@@ -2499,9 +2533,20 @@ function srtSelfTest() {
   eq(texts('The patch is finally live however nobody actually cares', 30),
      ['The patch is finally live', 'however nobody actually cares'], 'strong shift word opens a caption');
   eq(texts('It runs fine on PC, but the console build stutters', 24),
-     ['It runs fine on PC,', 'but the console build', 'stutters'], 'cap cuts at the comma, not mid-phrase');
-  eq(texts('Sony announced the remaster and fans immediately started arguing about it', 26),
-     ['Sony announced the', 'remaster and fans', 'immediately started', 'arguing about it'], 'lookback never leaves a one-word stub');
+     ['It runs fine on PC,', 'but the console', 'build stutters'], 'cap never leaves a one-word tail');
+
+  eq(texts('Too empty is boring\nToo packed is noise', 42),
+     ['Too empty is boring', 'Too packed is noise'], 'line break splits without any punctuation');
+  eq(texts('The patch is live but nobody cares\nWait', 42),
+     ['The patch is live but nobody cares', 'Wait'], 'with line breaks a shift word stays inside its line');
+  eq(texts('The developers on "The Legend of Zelda: Breath of the Wild"', 42),
+     ['The developers on', '"The Legend of Zelda: Breath of the Wild"'], 'quoted title is never cut');
+  eq(texts('And the shrine count they locked on day one', 42),
+     ['And the shrine count they', 'locked on day one'], 'no "day / one" stub');
+
+  const lines = ledyBuildLines(srtBuildBlocks(mk('Hyrule is actually built out of real Kyoto?\nWait\nToo empty is boring'), 30, 'one'));
+  eq(lines.map(c => c.text), ['Hyrule is actually built out of real Kyoto?', 'Wait', 'Too empty is boring'],
+     'Ledy gets one cue per line even when the cap split it');
 
   const timed = srtApplyTimingRules([{ start: 0, end: 1 }, { start: 3, end: 4 }], 1.2, 0, 30);
   console.assert(Math.abs(timed[0].displayEnd - 2.999) < 1e-6, 'caption holds until the next one starts', timed[0].displayEnd);
@@ -2654,47 +2699,27 @@ function ledyResetPrompt() {
   document.getElementById('ledy-prompt-input').value = LEDY_DEFAULT_PROMPT;
 }
 
-// Group words into SENTENCES (not caption blocks — caption blocks are far too
-// short at maxChars=7 and would strobe the face). Sentences shorter than the
-// minimum hold get merged forward so no expression flashes by.
-function ledyBuildSentences(words, minHold) {
-  const raw = [];
-  let cur = [];
-  for (const w of words) {
-    cur.push(w);
-    if (/[.!?][")'\]]*$/.test(w.text)) { raw.push(cur); cur = []; }
-  }
-  if (cur.length) raw.push(cur);
-
-  const merged = [];
-  for (const s of raw) {
-    const start = s[0].start;
-    const end = s[s.length - 1].end;
-    const prev = merged[merged.length - 1];
-    if (prev && (end - prev.start) && (end - start) < minHold && (prev.end - prev.start) < minHold * 2) {
-      prev.words = prev.words.concat(s);
-      prev.end = end;
-      prev.text = prev.words.map(w => w.text).join(' ');
-    } else {
-      merged.push({ words: s, start, end, text: s.map(w => w.text).join(' ') });
+// One expression per script line (per sentence when the script has no line
+// breaks), built from the SRT blocks themselves so every face change lands on
+// the exact moment a caption changes. A line the length cap split into several
+// captions still gets a single face — its first caption's start to the next
+// line's start.
+function ledyBuildLines(blocks) {
+  const out = [];
+  let words = [];
+  blocks.forEach((b, i) => {
+    words = words.concat(b.words);
+    const last = b.words[b.words.length - 1];
+    if (last.lineEnd || srtEndsSentence(last.text) || i === blocks.length - 1) {
+      out.push({ words, start: words[0].start, end: words[words.length - 1].end, text: words.map(w => w.text).join(' ') });
+      words = [];
     }
-  }
-  // A final sentence that is still too short gets folded into the one before it.
-  if (merged.length > 1) {
-    const last = merged[merged.length - 1];
-    if (last.end - last.start < minHold) {
-      const prev = merged[merged.length - 2];
-      prev.words = prev.words.concat(last.words);
-      prev.end = last.end;
-      prev.text = prev.words.map(w => w.text).join(' ');
-      merged.pop();
-    }
-  }
-  return merged;
+  });
+  return out;
 }
 
 async function ledyGenerate() {
-  if (!srtLastWords || !srtLastWords.length) {
+  if (!srtLastBlocks || !srtLastBlocks.length) {
     ledyShowStatus('err', 'SRT를 먼저 생성해주세요. 단어별 타임스탬프가 있어야 표정을 배치할 수 있어요.');
     return;
   }
@@ -2704,13 +2729,12 @@ async function ledyGenerate() {
   btn.disabled = true;
   btn.textContent = '배치 중...';
   document.getElementById('ledy-dl-btn').disabled = true;
-  ledyShowStatus('info', '대본을 읽고 문장별 감정을 배치하고 있어요...');
+  ledyShowStatus('info', '대본을 읽고 줄별 감정을 배치하고 있어요...');
 
   // Read the emotion list straight from the (possibly user-edited) prompt.
   ledyDict = ledyParseDict(ledyGetPrompt());
 
-  const minHold = parseFloat(document.getElementById('ledy-hold-num').value) || 2.0;
-  const sentences = ledyBuildSentences(srtLastWords, minHold);
+  const sentences = ledyBuildLines(srtLastBlocks);
 
   // The output contract is appended by code, never by the editable prompt, so a
   // prompt written in another session can't break the parser. The allowed keys
@@ -2755,7 +2779,7 @@ async function ledyGenerate() {
   btn.disabled = false;
 
   if (!fellBack) {
-    ledyShowStatus('ok', '완료! 문장 ' + ledyCues.length + '개에 표정을 배치했어요. 아래에서 확인하고, 아니다 싶은 건 드롭다운으로 바꾸세요.');
+    ledyShowStatus('ok', '완료! ' + ledyCues.length + '줄에 표정을 배치했어요. 아래에서 확인하고, 아니다 싶은 건 드롭다운으로 바꾸세요.');
   } else if (!document.getElementById('ledy-status-box').classList.contains('err')) {
     ledyShowStatus('err', '감정 배치에 실패했어요. 전부 normal로 채웠으니 프롬프트를 확인하거나 아래에서 직접 골라주세요.');
   }
@@ -2875,7 +2899,6 @@ function ledyInit() {
   const p = document.getElementById('ledy-prompt-input');
   if (p) p.value = ledyGetPrompt();
   ledyDict = ledyParseDict(ledyGetPrompt());
-  srtBindPair('ledy-hold-slider', 'ledy-hold-num', 1.0, 6.0, 1);
   srtBindPair('ledy-res-slider', 'ledy-res-num', 100, 1000, 0);
 }
 
