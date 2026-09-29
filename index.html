@@ -687,7 +687,7 @@ header{background:var(--surface);border-bottom:2px solid var(--border);padding:0
 
       <div class="srt-field">
         <label class="srt-label"><input type="checkbox" id="ledy-anim" checked> 전환 애니메이션 (찌그러짐 → 뿅)</label>
-        <div class="srt-hint">표정이 바뀔 때 이전 표정이 눌렸다가 새 표정이 튀어나와요. 바닥 기준으로 변형되므로 PNG 좌우·위에 투명 여백이 있어야 잘리지 않습니다.</div>
+        <div class="srt-hint">표정이 바뀔 때 이전 표정이 눌렸다가 새 표정이 튀어나와요. 켜면 잘리지 않도록 표정이 캔버스의 70% 크기로 줄어듭니다.</div>
       </div>
 
       <button class="btn btn-primary" id="ledy-gen-btn" disabled onclick="ledyGenerate()" style="width:100%;">표정 생성</button>
@@ -2856,39 +2856,48 @@ function ledyPlay(i) {
 }
 
 // Transition squash/stretch keyframes as [scaleX, scaleY], one frame each,
-// anchored at the bottom center. OUT plays on the old face's last frames
-// (squash down), IN on the new face's first frames (pop up and settle).
-const LEDY_ANIM_OUT = [[1.06, 0.92], [1.14, 0.80]];
-const LEDY_ANIM_IN  = [[0.85, 1.15], [1.06, 0.94], [0.98, 1.02]];
+// anchored at the bottom center of the face. OUT plays on the old face's last
+// frames (squash down), IN on the new face's first frames (pop up and settle).
+const LEDY_ANIM_OUT = [[1.02, 0.97], [1.05, 0.93], [1.09, 0.87], [1.14, 0.80]];
+const LEDY_ANIM_IN  = [[0.85, 1.15], [0.92, 1.09], [1.02, 0.98], [1.05, 0.95], [1.02, 0.98], [0.99, 1.01]];
+// With animation on, every face is shrunk to this share of its canvas so the
+// squash and stretch have room and never get cropped.
+const LEDY_ANIM_FIT = 0.7;
 
 // Same canvas size in and out, so every PNG in the concat list still matches.
+// The face box is centered, LEDY_ANIM_FIT of the canvas, and scaled from its bottom.
 function ledyAnimFilter([sx, sy]) {
-  const l = ((1 - sx) / 2).toFixed(3), r = ((1 + sx) / 2).toFixed(3), t = (1 - sy).toFixed(3);
+  const h = LEDY_ANIM_FIT / 2, bottom = 0.5 + h;
+  const l = (0.5 - h * sx).toFixed(3), r = (0.5 + h * sx).toFixed(3);
+  const t = (bottom - LEDY_ANIM_FIT * sy).toFixed(3), b = bottom.toFixed(3);
   return 'format=rgba,perspective=x0=W*' + l + ':y0=H*' + t + ':x1=W*' + r + ':y1=H*' + t +
-    ':x2=W*' + l + ':y2=H:x3=W*' + r + ':y3=H:sense=destination';
+    ':x2=W*' + l + ':y2=H*' + b + ':x3=W*' + r + ':y3=H*' + b + ':sense=destination';
 }
 
 // Returns concat entries as [file, frames] on the output frame grid.
 // Each cut lasts until the next cut starts, never until its own end: using end
 // times would punch holes in the MOV wherever the speaker pauses. The first cut
 // starts at frame 0 so the MOV lines up with the audio from the very start.
-// Cuts too short to fit the keyframes play without animation.
+// With animation on, every frame comes from _ledy_anim (the shrunk base _b plus
+// keyframes _i/_o); cuts too short to fit the keyframes show only the base.
 function ledyBuildEntries(cues, files, fps, tail, anim) {
   const startF = cues.map((c, i) => i ? Math.round(c.start * fps) : 0);
   const endF = Math.round(tail * fps);
   const entries = [];
-  const animated = new Set();
+  const used = new Set();
   cues.forEach((c, i) => {
+    const f = files[i];
     const last = i === cues.length - 1;
     const n = Math.max((last ? endF : startF[i + 1]) - startF[i], 1);
+    if (!anim) { entries.push([f, n]); return; }
+    used.add(f);
     const k = LEDY_ANIM_IN.length + (last ? 0 : LEDY_ANIM_OUT.length);
-    if (!anim || n < k + 2) { entries.push([files[i], n]); return; }
-    animated.add(files[i]);
-    LEDY_ANIM_IN.forEach((_, j) => entries.push(['_ledy_anim/' + files[i] + '_i' + j, 1]));
-    entries.push([files[i], n - k]);
-    if (!last) LEDY_ANIM_OUT.forEach((_, j) => entries.push(['_ledy_anim/' + files[i] + '_o' + j, 1]));
+    if (n < k + 2) { entries.push(['_ledy_anim/' + f + '_b', n]); return; }
+    LEDY_ANIM_IN.forEach((_, j) => entries.push(['_ledy_anim/' + f + '_i' + j, 1]));
+    entries.push(['_ledy_anim/' + f + '_b', n - k]);
+    if (!last) LEDY_ANIM_OUT.forEach((_, j) => entries.push(['_ledy_anim/' + f + '_o' + j, 1]));
   });
-  return { entries, animated: [...animated] };
+  return { entries, used: [...used] };
 }
 
 function ledyDownload() {
@@ -2898,20 +2907,21 @@ function ledyDownload() {
   const fps = srtCurrentFps || 30;
   const anim = document.getElementById('ledy-anim').checked;
   const tail = Math.max(srtAudioDuration || 0, ledyCues[ledyCues.length - 1].end);
-  const { entries, animated } = ledyBuildEntries(ledyCues, ledyResolveFiles(), fps, tail, anim);
+  const { entries, used } = ledyBuildEntries(ledyCues, ledyResolveFiles(), fps, tail, anim);
 
   const lines = [];
   lines.push('@echo off');
   lines.push('cd /d "%~dp0"');
   lines.push('');
-  if (animated.length) {
+  if (used.length) {
     lines.push('if not exist _ledy_anim mkdir _ledy_anim');
     lines.push('echo Building transition frames...');
-    animated.forEach(f => {
-      LEDY_ANIM_IN.forEach((s, j) => lines.push('ffmpeg -y -v error -i "' + f + '.png" -vf "' +
-        ledyAnimFilter(s) + '" "_ledy_anim\\' + f + '_i' + j + '.png"'));
-      LEDY_ANIM_OUT.forEach((s, j) => lines.push('ffmpeg -y -v error -i "' + f + '.png" -vf "' +
-        ledyAnimFilter(s) + '" "_ledy_anim\\' + f + '_o' + j + '.png"'));
+    const frame = (f, s, name) => lines.push('ffmpeg -y -v error -i "' + f + '.png" -vf "' +
+      ledyAnimFilter(s) + '" "_ledy_anim\\' + f + '_' + name + '.png"');
+    used.forEach(f => {
+      frame(f, [1, 1], 'b');
+      LEDY_ANIM_IN.forEach((s, j) => frame(f, s, 'i' + j));
+      LEDY_ANIM_OUT.forEach((s, j) => frame(f, s, 'o' + j));
     });
     lines.push('');
   }
@@ -2929,7 +2939,7 @@ function ledyDownload() {
     ' -vf scale=' + width + ':-2 -c:v prores_ks -profile:v 4444 -pix_fmt yuva444p10le ledy.mov');
   lines.push('');
   lines.push('del _ledy_list.txt');
-  if (animated.length) lines.push('rmdir /s /q _ledy_anim');
+  if (used.length) lines.push('rmdir /s /q _ledy_anim');
   lines.push('echo.');
   lines.push('echo Done. ledy.mov created.');
   lines.push('pause');
