@@ -702,6 +702,46 @@ header{background:var(--surface);border-bottom:2px solid var(--border);padding:0
       </div>
      </div>
     </div>
+
+    <div class="srt-col-head" style="margin-top:24px;">🎬 자막 애니메이션 (MOV)</div>
+    <div class="srt-panel" style="margin-top:0;">
+      <div class="srt-panel-desc">SRT를 먼저 생성한 뒤 사용하세요. ④의 길이·기간·간격·fps·줄 설정을 그대로 따르고, 템플릿 효과만 입혀서 투명 배경 MOV(가로 1080px)를 만드는 <b>.bat 파일</b>을 내려받습니다. 아무 폴더에 넣고 더블클릭하면 끝이에요.</div>
+
+      <div class="srt-field">
+        <label class="srt-label">템플릿</label>
+        <select class="srt-input" id="cap-template">
+          <option value="karaoke">단어 색 변경 — 말하는 단어만 색이 바뀜</option>
+        </select>
+      </div>
+
+      <div class="srt-field">
+        <label class="srt-label">서체 (Pretendard)</label>
+        <select class="srt-input" id="cap-font">
+          <option>Thin</option><option>ExtraLight</option><option>Light</option><option>Regular</option><option>Medium</option>
+          <option>SemiBold</option><option>Bold</option><option selected>ExtraBold</option><option>Black</option>
+        </select>
+      </div>
+
+      <div class="srt-field">
+        <label class="srt-label">글자 크기 (px, 가로 1080 기준)</label>
+        <div class="srt-slider-row">
+          <input type="range" id="cap-size-slider" min="30" max="160" step="1" value="80">
+          <div class="srt-num-box"><input type="number" id="cap-size-num" min="30" max="160" step="1" value="80"><span class="srt-num-unit">px</span></div>
+        </div>
+        <div class="srt-hint">한 줄이 1080px을 넘으면 좌우가 잘려요. 최대 길이를 길게 잡았다면 크기를 줄이세요. Pretendard가 PC에 설치돼 있어야 해요.</div>
+      </div>
+
+      <div class="srt-field">
+        <label class="srt-label">바뀐 후 글자색 (바뀌기 전은 흰색, 외곽선은 검정)</label>
+        <div class="srt-row">
+          <input type="color" id="cap-color-pick" value="#ffd400" oninput="capSyncColor(this.value)" style="width:56px;height:42px;padding:0;border:none;background:none;cursor:pointer;">
+          <input type="text" class="srt-input" id="cap-color-hex" value="#FFD400" maxlength="7" onchange="capSyncColor(this.value)">
+        </div>
+      </div>
+
+      <button class="btn" id="cap-dl-btn" disabled onclick="capDownload()" style="width:100%;background:var(--green);border-color:var(--green);color:#fff;">⬇ 자막 애니메이션 다운로드 (.bat)</button>
+      <div class="srt-status" id="cap-status-box"></div>
+    </div>
   </div>
   <!-- ══ BOOKMARKS TAB ══ -->
   <div id="tab-bookmarks" style="display:none;">
@@ -2181,6 +2221,7 @@ function srtSetAudioFile(file) {
   srtLastBlocks = null;
   srtAudioDuration = 0;
   ledyReset();
+  capSync();
   const label = document.getElementById('srt-audio-label');
   const sub = document.querySelector('#tab-srt .srt-filebox-sub');
   const box = document.getElementById('srt-audio-box');
@@ -2337,6 +2378,7 @@ async function srtGenerate() {
 
     srtLastBlocks = blocks;
     ledyOnWordsReady();
+    capSync();
 
     srtShowStatus('ok', '완료! 단어 ' + words.length + '개, 자막 ' + blocks.length + '블록 생성됨. 평균 신뢰도(loss): ' + (data.loss !== undefined ? data.loss.toFixed(3) : '—') + ' (낮을수록 정확). 다운로드 버튼을 눌러주세요.');
     document.getElementById('srt-dl-btn').disabled = false;
@@ -2963,6 +3005,133 @@ function ledyInit() {
   if (p) p.value = ledyGetPrompt();
   ledyDict = ledyParseDict(ledyGetPrompt());
   srtBindPair('ledy-res-slider', 'ledy-res-num', 100, 1000, 0);
+  srtBindPair('cap-size-slider', 'cap-size-num', 30, 160, 0);
+}
+
+// ══ CAPTION ANIMATION MOV (cap-prefixed, isolated) ══
+//
+// Same split as Ledy: the browser writes an ASS subtitle file and FFmpeg's
+// libass renders it onto a transparent canvas. Timing comes straight from
+// srtLastBlocks, so the caption settings in ④ apply unchanged; a template only
+// decides how a block is drawn. The ASS rides inside the .bat as base64 (decoded
+// by Windows' own certutil), so quotes, accents and ASS braces never meet cmd.
+// Size: the canvas is only as tall as the text band, and the codec is QuickTime
+// Animation (qtrle), which stores only the rows that changed since the previous
+// frame — a held caption costs next to nothing, unlike intra-only ProRes. Its
+// default keyframe every 12 frames throws most of that away, so it's every 5s.
+const CAP_WIDTH = 1080;
+
+function capSync() {
+  const b = document.getElementById('cap-dl-btn');
+  if (b) b.disabled = !(srtLastBlocks && srtLastBlocks.length);
+}
+
+function capShowStatus(type, msg) {
+  const box = document.getElementById('cap-status-box');
+  box.className = 'srt-status show ' + type;
+  box.innerHTML = msg;
+}
+
+// Color bar and hex box mirror each other; a bad hex reverts to the bar's value.
+function capSyncColor(v) {
+  v = String(v).trim();
+  if (!v.startsWith('#')) v = '#' + v;
+  if (!/^#[0-9a-f]{6}$/i.test(v)) v = document.getElementById('cap-color-pick').value;
+  document.getElementById('cap-color-pick').value = v.toLowerCase();
+  document.getElementById('cap-color-hex').value = v.toUpperCase();
+}
+
+function capAssTime(sec) {
+  const cs = Math.max(0, Math.round(sec * 100));
+  const p = n => String(n).padStart(2, '0');
+  return Math.floor(cs / 360000) + ':' + p(Math.floor(cs / 6000) % 60) + ':' + p(Math.floor(cs / 100) % 60) + '.' + p(cs % 100);
+}
+
+// Templates turn one caption block into ASS events [start, end, text].
+// brk = index of the last word on the first line (-1 for one line).
+const CAP_TEMPLATES = {
+  // The whole caption sits in white; the word being spoken switches to the
+  // chosen color and stays lit until the next word starts, so pauses never
+  // flicker back to white. Before the first word, everything is white.
+  karaoke(block, brk, color) {
+    const ws = block.words;
+    const text = hi => ws.map((w, i) =>
+      (i === hi ? '{\\c' + color + '}' + w.text + '{\\r}' : w.text) +
+      (i === ws.length - 1 ? '' : i === brk ? '\\N' : ' ')).join('');
+    const ev = [];
+    if (ws[0].start > block.start) ev.push([block.start, ws[0].start, text(-1)]);
+    ws.forEach((w, i) => ev.push([Math.max(w.start, block.start), i < ws.length - 1 ? ws[i + 1].start : block.displayEnd, text(i)]));
+    return ev;
+  },
+};
+
+function capBuildBat() {
+  const maxChars = parseInt(document.getElementById('srt-max-chars-num').value, 10) || 7;
+  const lineMode = document.querySelector('input[name="srt-line-mode"]:checked').value;
+  const fps = srtCurrentFps || 30;
+  const hex = document.getElementById('cap-color-hex').value;
+  const color = '&H' + hex.slice(5, 7) + hex.slice(3, 5) + hex.slice(1, 3) + '&';   // ASS is BGR
+  const template = CAP_TEMPLATES[document.getElementById('cap-template').value];
+
+  // Each Pretendard weight installs under its own full name ("Pretendard Black"),
+  // which libass matches directly, so the style's Bold flag stays off.
+  const font = 'Pretendard ' + document.getElementById('cap-font').value;
+  const size = parseInt(document.getElementById('cap-size-num').value, 10) || 80;
+  const lines = lineMode === 'one' ? 1 : 2;
+  const height = Math.ceil((size * 1.3 * lines + 40) / 2) * 2;
+  const outline = Math.max(2, Math.round(size / 16));
+  const tail = Math.max(srtAudioDuration || 0, srtLastBlocks[srtLastBlocks.length - 1].displayEnd);
+
+  const events = srtLastBlocks.flatMap(b => {
+    const clean = { ...b, words: b.words.map(w => ({ ...w, text: w.text.replace(/[{}\\]/g, '') })) };
+    const wrapped = srtWrapLine(clean.words.map(w => w.text).join(' '), maxChars, lineMode);
+    const brk = wrapped.length > 1 ? wrapped[0].split(' ').length - 1 : -1;
+    return template(clean, brk, color);
+  }).filter(([s, e]) => Math.round(e * 100) > Math.round(s * 100));
+
+  const ass = [
+    '[Script Info]', 'ScriptType: v4.00+', 'PlayResX: ' + CAP_WIDTH, 'PlayResY: ' + height,
+    'WrapStyle: 2', 'ScaledBorderAndShadow: yes', '',
+    '[V4+ Styles]',
+    'Format: Name, Fontname, Fontsize, PrimaryColour, SecondaryColour, OutlineColour, BackColour, Bold, Italic, Underline, StrikeOut, ScaleX, ScaleY, Spacing, Angle, BorderStyle, Outline, Shadow, Alignment, MarginL, MarginR, MarginV, Encoding',
+    'Style: Default,' + font + ',' + size + ',&H00FFFFFF,&H00FFFFFF,&H00000000,&H00000000,0,0,0,0,100,100,0,0,1,' + outline + ',0,5,20,20,0,1',
+    '', '[Events]',
+    'Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text',
+    ...events.map(([s, e, t]) => 'Dialogue: 0,' + capAssTime(s) + ',' + capAssTime(e) + ',Default,,0,0,0,,' + t),
+  ].join('\r\n') + '\r\n';
+
+  let bin = '';
+  new TextEncoder().encode(ass).forEach(b => { bin += String.fromCharCode(b); });
+  const b64 = btoa(bin);
+
+  const out = ['@echo off', 'cd /d "%~dp0"', '', '('];
+  for (let i = 0; i < b64.length; i += 76) out.push('echo ' + b64.slice(i, i + 76));
+  out.push(') > _cap.b64');
+  out.push('certutil -f -decode _cap.b64 _cap.ass >nul');
+  out.push('del _cap.b64');
+  out.push('');
+  out.push('ffmpeg -y -f lavfi -i "color=c=black@0:s=' + CAP_WIDTH + 'x' + height + ':r=' + fps + ':d=' + tail.toFixed(3) +
+    ',format=rgba" -vf "subtitles=_cap.ass:alpha=1" -c:v qtrle -pix_fmt argb -g ' + Math.round(fps * 5) + ' captions.mov');
+  out.push('');
+  out.push('del _cap.ass');
+  out.push('echo.');
+  out.push('echo Done. captions.mov created.');
+  out.push('pause');
+  return out.join('\r\n') + '\r\n';
+}
+
+function capDownload() {
+  if (!srtLastBlocks || !srtLastBlocks.length) return;
+  const base = srtAudioFile ? srtAudioFile.name.replace(/\.[^/.]+$/, '') : 'captions';
+  const blob = new Blob([capBuildBat()], { type: 'text/plain' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = base + '_captions.bat';
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  setTimeout(() => URL.revokeObjectURL(a.href), 4000);
+  capShowStatus('ok', '.bat을 내려받았어요. <b>아무 폴더에 넣고 더블클릭</b>하면 같은 폴더에 captions.mov가 생깁니다. (FFmpeg 설치 필요)');
 }
 
 function srtInitKeyField() {

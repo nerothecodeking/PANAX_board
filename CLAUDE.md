@@ -68,6 +68,8 @@ SRT와 Ledy 기능에는 구간 주석 대신 접두사가 있다. `srt*` / `led
 
 **자막 & 표정 생성** — ElevenLabs 키 + 음원 + 영어 대본(셋은 두 기능이 공유) → SRT 생성 → 표정 생성 순서. 표정 쪽이 SRT 결과(`srtLastBlocks`)를 재사용하므로 SRT를 먼저 만들어야 버튼이 활성화된다.
 
+**자막 애니메이션 MOV** (`cap*`, 같은 탭 하단) — `srtLastBlocks`로 ASS를 만들고 `.bat` 안에 base64로 넣어 `certutil`로 풀어낸 뒤 FFmpeg `subtitles=...:alpha=1`로 투명 MOV를 렌더한다. base64인 이유: 따옴표·악센트·ASS 중괄호가 cmd `echo`를 거치면 깨진다. 템플릿은 `CAP_TEMPLATES`에 블록 → ASS 이벤트 함수로 추가한다. 코덱은 ProRes가 아니라 `qtrle`(+ `-g` 5초) — 자막은 대부분 정지 화면이라 바뀐 줄만 저장하는 쪽이 수십 배 작다. 가로 1080 고정, 세로는 글자 띠 높이만큼만. 서체는 Pretendard 굵기별 전체 이름(`Pretendard ExtraBold`)으로 지정한다 — libass가 이 이름으로 바로 찾으므로 스타일의 Bold 플래그는 끈다. PC에 Pretendard가 설치돼 있어야 한다.
+
 ---
 
 ## 3. 데이터
