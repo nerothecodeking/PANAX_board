@@ -686,7 +686,7 @@ header{background:var(--surface);border-bottom:2px solid var(--border);padding:0
       </div>
 
       <div class="srt-field">
-        <label class="srt-label"><input type="checkbox" id="ledy-anim" checked> 전환 애니메이션 (찌그러짐 → 뿅)</label>
+        <label class="srt-label"><input type="checkbox" id="ledy-anim"> 전환 애니메이션 (찌그러짐 → 뿅)</label>
         <div class="srt-hint">표정이 바뀔 때 이전 표정이 눌렸다가 새 표정이 튀어나와요. 켜면 잘리지 않도록 표정이 캔버스의 70% 크기로 줄어듭니다.</div>
       </div>
 
@@ -734,9 +734,14 @@ header{background:var(--surface);border-bottom:2px solid var(--border);padding:0
       <div class="srt-field">
         <label class="srt-label">바뀐 후 글자색 (바뀌기 전은 흰색, 외곽선은 검정)</label>
         <div class="srt-row">
-          <input type="color" id="cap-color-pick" value="#ffd400" oninput="capSyncColor(this.value)" style="width:56px;height:42px;padding:0;border:none;background:none;cursor:pointer;">
-          <input type="text" class="srt-input" id="cap-color-hex" value="#FFD400" maxlength="7" onchange="capSyncColor(this.value)">
+          <input type="color" id="cap-color-pick" value="#54c8f7" oninput="capSyncColor(this.value)" style="width:56px;height:42px;padding:0;border:none;background:none;cursor:pointer;">
+          <input type="text" class="srt-input" id="cap-color-hex" value="#54C8F7" maxlength="7" onchange="capSyncColor(this.value)">
         </div>
+      </div>
+
+      <div class="srt-field">
+        <label class="srt-label"><input type="checkbox" id="cap-markers" checked> 자막 전환 지점에 마커 넣기</label>
+        <div class="srt-hint">프리미어에서 MOV를 시퀀스에 올리면 자막이 바뀌는 자리마다 클립 마커가 보여요(이름 = 자막 내용). ExifTool 설치 필요(<code>winget install OliverBetz.ExifTool</code>). 없으면 마커 없이 MOV만 만들어져요.</div>
       </div>
 
       <button class="btn" id="cap-dl-btn" disabled onclick="capDownload()" style="width:100%;background:var(--green);border-color:var(--green);color:#fff;">⬇ 자막 애니메이션 다운로드 (.bat)</button>
@@ -3065,6 +3070,27 @@ const CAP_TEMPLATES = {
   },
 };
 
+// Premiere reads clip markers from the file's XMP (xmpDM:Tracks), so the MOV
+// carries one marker per caption change and they show up wherever the clip is
+// placed. Times are in Premiere ticks (254016000000 per second), snapped to the
+// output frame grid. The first caption starts at 0, so it gets no marker.
+function capMarkersXmp(fps) {
+  const TICKS = 254016000000;
+  const esc = s => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+  const items = srtLastBlocks.slice(1).map(b =>
+    '<rdf:li rdf:parseType="Resource"><xmpDM:startTime>' + Math.round(Math.round(b.start * fps) / fps * TICKS) +
+    '</xmpDM:startTime><xmpDM:duration>0</xmpDM:duration><xmpDM:name>' +
+    esc(b.words.map(w => w.text).join(' ')) + '</xmpDM:name></rdf:li>').join('\n');
+  return '<?xpacket begin="﻿" id="W5M0MpCehiHzreSzNTczkc9d"?>\n' +
+    '<x:xmpmeta xmlns:x="adobe:ns:meta/"><rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">\n' +
+    '<rdf:Description rdf:about="" xmlns:xmpDM="http://ns.adobe.com/xmp/1.0/DynamicMedia/">\n' +
+    '<xmpDM:Tracks><rdf:Bag><rdf:li rdf:parseType="Resource">\n' +
+    '<xmpDM:trackName>Comment</xmpDM:trackName><xmpDM:trackType>Comment</xmpDM:trackType>' +
+    '<xmpDM:frameRate>f' + TICKS + '</xmpDM:frameRate>\n' +
+    '<xmpDM:markers><rdf:Seq>\n' + items + '\n</rdf:Seq></xmpDM:markers>\n' +
+    '</rdf:li></rdf:Bag></xmpDM:Tracks>\n</rdf:Description></rdf:RDF></x:xmpmeta>\n<?xpacket end="w"?>\n';
+}
+
 function capBuildBat() {
   const maxChars = parseInt(document.getElementById('srt-max-chars-num').value, 10) || 7;
   const lineMode = document.querySelector('input[name="srt-line-mode"]:checked').value;
@@ -3100,20 +3126,31 @@ function capBuildBat() {
     ...events.map(([s, e, t]) => 'Dialogue: 0,' + capAssTime(s) + ',' + capAssTime(e) + ',Default,,0,0,0,,' + t),
   ].join('\r\n') + '\r\n';
 
-  let bin = '';
-  new TextEncoder().encode(ass).forEach(b => { bin += String.fromCharCode(b); });
-  const b64 = btoa(bin);
+  const out = ['@echo off', 'cd /d "%~dp0"', ''];
+  // Writes text into a file through base64 + certutil, so cmd never sees its characters.
+  const embed = (text, file) => {
+    let bin = '';
+    new TextEncoder().encode(text).forEach(b => { bin += String.fromCharCode(b); });
+    const b64 = btoa(bin);
+    out.push('(');
+    for (let i = 0; i < b64.length; i += 76) out.push('echo ' + b64.slice(i, i + 76));
+    out.push(') > _cap.b64');
+    out.push('certutil -f -decode _cap.b64 ' + file + ' >nul');
+    out.push('del _cap.b64');
+    out.push('');
+  };
+  embed(ass, '_cap.ass');
+  const markers = document.getElementById('cap-markers').checked;
+  if (markers) embed(capMarkersXmp(fps), '_cap.xmp');
 
-  const out = ['@echo off', 'cd /d "%~dp0"', '', '('];
-  for (let i = 0; i < b64.length; i += 76) out.push('echo ' + b64.slice(i, i + 76));
-  out.push(') > _cap.b64');
-  out.push('certutil -f -decode _cap.b64 _cap.ass >nul');
-  out.push('del _cap.b64');
-  out.push('');
   out.push('ffmpeg -y -f lavfi -i "color=c=black@0:s=' + CAP_WIDTH + 'x' + height + ':r=' + fps + ':d=' + tail.toFixed(3) +
     ',format=rgba" -vf "subtitles=_cap.ass:alpha=1" -c:v qtrle -pix_fmt argb -g ' + Math.round(fps * 5) + ' captions.mov');
   out.push('');
   out.push('del _cap.ass');
+  if (markers) {
+    out.push('where exiftool >nul 2>&1 && exiftool -q -overwrite_original "-xmp<=_cap.xmp" captions.mov || echo [!] exiftool not found - markers skipped. Install: winget install OliverBetz.ExifTool');
+    out.push('del _cap.xmp');
+  }
   out.push('echo.');
   out.push('echo Done. captions.mov created.');
   out.push('pause');
