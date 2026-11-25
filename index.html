@@ -425,6 +425,8 @@ header{background:var(--surface);border-bottom:2px solid var(--border);padding:0
     <div class="version-tag">PANAX_board 1.2.1 (260623)</div>
   </div>
   <div class="hdr-right">
+    <input id="pxcap-url" type="text" placeholder="PANAX 링크 · 게시글 번호" onkeydown="if(event.key==='Enter')pxcapOpen()" style="width:240px;font-size:12px;padding:6px 10px;border:2px solid var(--border2);border-radius:6px;background:var(--surface);color:var(--text);">
+    <button class="btn btn-sm" style="white-space:nowrap" onclick="pxcapOpen()" title="PANAX capture 확장으로 모바일 캡처 창 열기">📸 PANAX 캡처</button>
     <div class="dot-row">
       <span class="dot" id="d-ant"></span>Claude
     </div>
@@ -3176,6 +3178,20 @@ function srtInitKeyField() {
   if (k) k.addEventListener('input', srtCheckReady);
   srtInitKey();
   srtCheckReady();
+}
+
+// ── PANAX CAPTURE ──
+// The capture tool is a separate Chrome extension (capture/ folder). The board only asks it to open
+// a page; the extension's fixed ID comes from the "key" in capture/manifest.json.
+const PXCAP_ID = 'pkgbnjmahpkgeehecfaojfpinkdnmahc';
+function pxcapOpen() {
+  const url = document.getElementById('pxcap-url').value.trim();
+  const missing = () => alert('PANAX capture 확장이 설치되어 있지 않습니다.\n\nchrome://extensions → 개발자 모드 켜기 → "압축해제된 확장 프로그램 로드" → 저장소의 capture 폴더 선택');
+  if (!window.chrome?.runtime?.sendMessage) return missing();
+  chrome.runtime.sendMessage(PXCAP_ID, { type: 'open', url }, res => {
+    if (chrome.runtime.lastError || !res) return missing();
+    if (!res.ok) alert('캡처 창 열기 실패: ' + (res.error || ''));
+  });
 }
 
 // ── INIT ──

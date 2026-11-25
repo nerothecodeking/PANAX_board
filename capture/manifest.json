@@ -1,0 +1,44 @@
+{
+  "manifest_version": 3,
+  "name": "PANAX capture",
+  "version": "1.0.0",
+  "description": "PANAX 모바일 화면의 블록을 클릭 한 번으로 같은 폭·같은 배율 PNG로 저장",
+  "key": "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEA1pbda47HyFu30g42bj5zG++JJn+0/lvGmL4YUmTFyO9xY5HJTPgtnMnSHB1Wmqjk3b/x31cwhSOpygnGeNe2ZLjgXdNU1+VvehGx8aPY1fTT+dJKTKYvJOAyoefwFMULZcTjAadeerKLb9hYIdUiQGSo4BO136ylFwXTXtBon0w/eU3RrrEYSgNA2xYyfJZ/zGZBxYu7bJxQZcGJ23s47990L1fRgN3U3SvTHlV+cbGduDWICX/i5ITeg0FBwtYVyOj9xxD0br0oFFEWOWs+q6qhmcroEA3+eX6nWHiOHUny7c1pv5YmpOm8PA2udQn28+t1PeAQk7QOYALUQ5PfLQIDAQAB",
+  "permissions": [
+    "debugger",
+    "downloads",
+    "storage",
+    "tabs",
+    "sidePanel"
+  ],
+  "host_permissions": [
+    "https://panaxgames.com/*"
+  ],
+  "background": {
+    "service_worker": "background.js"
+  },
+  "action": {
+    "default_title": "PANAX capture"
+  },
+  "content_scripts": [
+    {
+      "matches": [
+        "https://panaxgames.com/*"
+      ],
+      "js": [
+        "content.js"
+      ],
+      "run_at": "document_idle"
+    }
+  ],
+  "externally_connectable": {
+    "matches": [
+      "https://nerothecodeking.github.io/*",
+      "http://localhost/*",
+      "http://127.0.0.1/*"
+    ]
+  },
+  "side_panel": {
+    "default_path": "panel.html"
+  }
+}
